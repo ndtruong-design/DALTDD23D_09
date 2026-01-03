@@ -34,17 +34,32 @@ fun AppNavigation() {
         startDestination = "login"
     ) {
         composable("login") {
-            LoginScreen {
-                navController.navigate("register")
-            }
+            LoginScreen(
+                onRegisterClick = {
+                    navController.navigate("register")
+                },
+                onForgotPasswordClick = {
+                    navController.navigate("forgot")
+                }
+            )
         }
+
         composable("register") {
             RegisterScreen {
                 navController.popBackStack()
             }
         }
+
+        composable("forgot") {
+            ForgotPasswordScreen(
+                onBackToLogin = {
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
+
 
 
 @Composable

@@ -44,7 +44,7 @@ import com.example.appbandienthoai.ui.theme.AppBanDienThoaiTheme
 
 
 @Composable
-fun LoginScreen(onRegisterClick: () -> Unit) {
+fun LoginScreen(onRegisterClick: () -> Unit,onForgotPasswordClick: () -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var rememberMe by remember { mutableStateOf(false) }
@@ -70,12 +70,7 @@ fun LoginScreen(onRegisterClick: () -> Unit) {
             value = username,
             onValueChange = { username = it },
             label = { Text("Tên người dùng",color = Color(0xFF6A1B9A)) },
-            modifier = Modifier.fillMaxWidth(),shape = RoundedCornerShape(12.dp),prefix = {
-                Text(
-                    text = "Nhập tên đăng nhập",
-                    color = Color.Gray
-                )
-            }
+            modifier = Modifier.fillMaxWidth(),shape = RoundedCornerShape(12.dp),
         )
 
         Spacer(Modifier.height(16.dp))
@@ -85,11 +80,7 @@ fun LoginScreen(onRegisterClick: () -> Unit) {
             onValueChange = { password = it },
             label = { Text("Mật khẩu") },
             shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth(),prefix = {
-                Text(
-                    text = "Nhập mật khẩu",
-                    color = Color.Gray
-                )},
+            modifier = Modifier.fillMaxWidth(),
             visualTransformation = if (isPasswordVisible)
                 VisualTransformation.None
             else
@@ -125,7 +116,7 @@ fun LoginScreen(onRegisterClick: () -> Unit) {
                 text = "Quên mật khẩu",
                 color = Color(0xFF6A1B9A),
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable {}
+                modifier = Modifier.clickable {onForgotPasswordClick()}
             )
         }
 
@@ -189,6 +180,5 @@ fun LoginScreen(onRegisterClick: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview1() {
-    LoginScreen {
-    }
+    LoginScreen (onRegisterClick={},onForgotPasswordClick={})
 }

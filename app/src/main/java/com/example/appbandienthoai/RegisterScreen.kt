@@ -68,12 +68,8 @@ fun RegisterScreen(onLoginClick: () -> Unit) {
             value = username,shape = RoundedCornerShape(12.dp),
             onValueChange = { username = it },
             label = { Text("Tên người dùng",color = Color(0xFF6A1B9A)) },
-            modifier = Modifier.fillMaxWidth(),prefix = {
-                Text(
-                    text = "Nhập tên đăng nhập",
-                    color = Color.Gray
-                )
-            }
+            modifier = Modifier.fillMaxWidth()
+            
         )
 
         Spacer(Modifier.height(16.dp))
@@ -83,13 +79,7 @@ fun RegisterScreen(onLoginClick: () -> Unit) {
             onValueChange = { phone = it },
             label = { Text("Số điện thoại",color = Color(0xFF6A1B9A)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-            modifier = Modifier.fillMaxWidth(),prefix = {
-                Text(
-                    text = "Nhập số điện thoại",
-                    color = Color.Gray
-                )
-            }
-
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(Modifier.height(16.dp))
@@ -98,12 +88,7 @@ fun RegisterScreen(onLoginClick: () -> Unit) {
             value = password,shape = RoundedCornerShape(12.dp),
             onValueChange = { password = it },
             label = { Text("Mật khẩu",color = Color(0xFF6A1B9A)) },
-            modifier = Modifier.fillMaxWidth(),prefix = {
-                Text(
-                    text = "Nhập mật khẩu",
-                    color = Color.Gray
-                )
-            },
+            modifier = Modifier.fillMaxWidth(),
             visualTransformation = if (isPasswordVisible)
                 VisualTransformation.None
             else
