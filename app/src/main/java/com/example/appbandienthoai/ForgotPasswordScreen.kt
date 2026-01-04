@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,23 +26,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 
 @Composable
-fun ForgotPasswordScreen(onBackToLogin: () -> Unit) {
-    var email by remember { mutableStateOf("") }
+fun ForgotPasswordScreen(onBackToLogin: () -> Unit, api: ApiService) {
+    var phone by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var showChangePassword by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
+    var loading by remember { mutableStateOf(false) }
 
-    // Email đúng giả lập
-    val correctEmail = "test@gmail.com"
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp)
     ) {
-
         Text(
             text = "QUÊN MẬT KHẨU",
             fontSize = 26.sp,
@@ -53,9 +54,9 @@ fun ForgotPasswordScreen(onBackToLogin: () -> Unit) {
         Spacer(Modifier.height(32.dp))
 
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
+            value = phone,
+            onValueChange = { phone = it },
+            label = { Text("Số điện thoại") },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp)
         )
@@ -64,19 +65,35 @@ fun ForgotPasswordScreen(onBackToLogin: () -> Unit) {
 
         Button(
             onClick = {
-                if (email == correctEmail) {
-                    showChangePassword = true
+                scope.launch {
+                    loading = true
                     error = ""
-                } else {
-                    error = "Email không tồn tại"
-                    showChangePassword = false
+                    try {
+                        val request = ForgotPasswordRequest(SoDienThoai = phone, MatKhau = "")
+                        val response = api.forgotPassword(request)
+                        if (response.success) {
+                            showChangePassword = true
+                        } else {
+                            error = response.message
+                            showChangePassword = false
+                        }
+                    } catch (e: Exception) {
+                        error = "Không kết nối được server: ${e.message}"
+                        showChangePassword = false
+                    } finally {
+                        loading = false
+                    }
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A1B9A))
         ) {
-            Text("KIỂM TRA EMAIL")
+            Text("KIỂM TRA SỐ ĐIỆN THOẠI", color = Color.White)
         }
+
 
         if (error.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
@@ -85,7 +102,6 @@ fun ForgotPasswordScreen(onBackToLogin: () -> Unit) {
                 color = Color.Red
             )
         }
-
 
         if (showChangePassword) {
             Spacer(Modifier.height(24.dp))
@@ -103,14 +119,24 @@ fun ForgotPasswordScreen(onBackToLogin: () -> Unit) {
 
             Button(
                 onClick = {
-                    // TODO: gọi API đổi mật khẩu
-                    onBackToLogin()
+                    scope.launch {
+                        try {
+                            val request = ForgotPasswordRequest(SoDienThoai = phone, MatKhau = newPassword)
+                            val response = api.forgotPassword(request)
+
+                            if (response.success) {
+                                onBackToLogin()
+                            } else {
+                                error = response.message
+                            }
+                        } catch (e: Exception) {
+                            error = "Không kết nối được server"
+                        }
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF6A1B9A)
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A1B9A))
             ) {
                 Text("ĐỔI MẬT KHẨU", color = Color.White)
             }
@@ -128,10 +154,21 @@ fun ForgotPasswordScreen(onBackToLogin: () -> Unit) {
         )
     }
 }
+
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview3() {
-    ForgotPasswordScreen {
-    }
+fun ForgotPasswordScreenPreview() {
+    ForgotPasswordScreen(
+        api = object : ApiService {
+            override suspend fun login(request: LoginRequest) = throw NotImplementedError()
+            override suspend fun register(request: RegisterRequest) =throw NotImplementedError()
+            override suspend fun forgotPassword(request: ForgotPasswordRequest) =
+                ForgotPasswordResponse(
+                    success = true,
+                    message = "Preview message",
+                    token = "fake_token"
+                )
+        },
+        onBackToLogin = {}
+    )
 }
-

@@ -3,10 +3,6 @@ package com.example.appbandienthoai
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -35,45 +31,34 @@ fun AppNavigation() {
     ) {
         composable("login") {
             LoginScreen(
-                onRegisterClick = {
-                    navController.navigate("register")
-                },
-                onForgotPasswordClick = {
-                    navController.navigate("forgot")
-                }
+                api = RetrofitClient.api,
+                onRegisterClick = { navController.navigate("register") },
+                onForgotPasswordClick = { navController.navigate("forgot") }
             )
+
         }
 
         composable("register") {
-            RegisterScreen {
-                navController.popBackStack()
-            }
-        }
-
-        composable("forgot") {
-            ForgotPasswordScreen(
-                onBackToLogin = {
+            RegisterScreen(
+                api = RetrofitClient.api,
+                onLoginClick = {
                     navController.popBackStack()
                 }
             )
         }
+
+
+        composable("forgot") {
+            ForgotPasswordScreen(
+                api = RetrofitClient.api, // đây là ApiService của bạn
+                onBackToLogin = { navController.popBackStack() }
+            )
+        }
+
     }
 }
 
 
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AppBanDienThoaiTheme {
-        Greeting("Android")
-    }
-}
+
