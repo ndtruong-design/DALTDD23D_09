@@ -1,0 +1,44 @@
+<?php
+header("Content-Type: application/json");
+require_once "../config/db_connect.php";
+
+$data = json_decode(file_get_contents("php://input"), true);
+$username = $data['TenDangNhap'] ?? '';
+$phone    = $data['SoDienThoai'] ?? '';
+$password = $data['MatKhau'] ?? '';
+
+if (!$username || !$phone || !$password) {
+    echo json_encode(["error" => "Thiếu dữ liệu"]);
+    exit;
+}
+
+
+$sql = "SELECT MaKhachHang FROM khachhang WHERE SoDienThoai=:SoDienThoai OR TenDangNhap=:TenDangNhap";
+$stmt = $conn->prepare($sql);
+$stmt->execute([
+    ":SoDienThoai" => $phone,
+    ":TenDangNhap" => $username
+]);
+
+if ($stmt->rowCount() > 0) {
+    echo json_encode(["error" => "Tài khoản đã tồn tại"]);
+    exit;
+}
+
+
+$hash = password_hash($password, PASSWORD_BCRYPT);
+
+$sql = "INSERT INTO khachhang(TenDangNhap, SoDienThoai, MatKhau)
+        VALUES(:TenDangNhap, :SoDienThoai, :MatKhau)";
+$stmt = $conn->prepare($sql);
+$stmt->execute([
+    ":TenDangNhap" => $username,
+    ":SoDienThoai" => $phone,
+    ":MatKhau" => $hash
+]);
+
+echo json_encode([
+    "success" => true,
+    "message" => "Đăng ký thành công"
+]);
+?>
