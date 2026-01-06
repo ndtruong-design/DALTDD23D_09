@@ -33,10 +33,15 @@ fun AppNavigation() {
             LoginScreen(
                 api = RetrofitClient.api,
                 onRegisterClick = { navController.navigate("register") },
-                onForgotPasswordClick = { navController.navigate("forgot") }
+                onForgotPasswordClick = { navController.navigate("forgot") },
+                onLoginSuccess = {
+                    navController.navigate("main") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
             )
-
         }
+
 
         composable("register") {
             RegisterScreen(
@@ -46,11 +51,13 @@ fun AppNavigation() {
                 }
             )
         }
-
+        composable("main") {
+            MainScreen()
+        }
 
         composable("forgot") {
             ForgotPasswordScreen(
-                api = RetrofitClient.api, // đây là ApiService của bạn
+                api = RetrofitClient.api,
                 onBackToLogin = { navController.popBackStack() }
             )
         }

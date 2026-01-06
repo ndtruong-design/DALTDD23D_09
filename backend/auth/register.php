@@ -24,10 +24,7 @@ if ($stmt->rowCount() > 0) {
     echo json_encode(["error" => "Tài khoản đã tồn tại"]);
     exit;
 }
-
-
-$hash = password_hash($password, PASSWORD_BCRYPT);
-
+$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 $sql = "INSERT INTO khachhang(TenDangNhap, SoDienThoai, MatKhau)
         VALUES(:TenDangNhap, :SoDienThoai, :MatKhau)";
 $stmt = $conn->prepare($sql);

@@ -46,13 +46,15 @@ import androidx.compose.ui.unit.sp
 import androidx.lint.kotlin.metadata.Visibility
 import com.example.appbandienthoai.ui.theme.AppBanDienThoaiTheme
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 
 @Composable
 fun LoginScreen(
     api: ApiService,
     onRegisterClick: () -> Unit,
-    onForgotPasswordClick: () -> Unit
+    onForgotPasswordClick: () -> Unit,
+    onLoginSuccess: () -> Unit
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -124,6 +126,7 @@ fun LoginScreen(
             onClick = {
                 scope.launch {
                     errorMessage = ""
+
                     if (username.isBlank() || password.isBlank()) {
                         errorMessage = "Vui lòng nhập đầy đủ thông tin"
                         return@launch
@@ -131,13 +134,21 @@ fun LoginScreen(
 
                     loading = true
                     try {
-                        val response = api.login(LoginRequest(username, password))
-                        if (response.success == true) {
-                            // Lưu JWT token
-                            response.token?.let { saveToken(context, it) }
+                        val response = api.login(
+                            LoginRequest(username, password)
+                        )
+
+                        if (response.success) {
+                            response.token?.let {
+                                saveToken(context, it)
+                                onLoginSuccess()
+                            }
                         } else {
-                            errorMessage = response.error ?: "Sai tài khoản hoặc mật khẩu"
+                            errorMessage = response.message ?: "Sai tài khoản hoặc mật khẩu"
                         }
+
+                    } catch (e: HttpException) {
+                        errorMessage = "Sai tài khoản hoặc mật khẩu"
                     } catch (e: Exception) {
                         errorMessage = "Không kết nối được server"
                     } finally {
@@ -145,7 +156,8 @@ fun LoginScreen(
                     }
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
+
+        modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A1B9A))
         ) {
@@ -196,7 +208,7 @@ fun LoginScreen(
         }
     }
 }
-
+/*
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
@@ -204,13 +216,19 @@ fun LoginScreenPreview() {
     AppBanDienThoaiTheme {
         LoginScreen(
             api = object : ApiService { // fake API để Preview
-                override suspend fun login(request: LoginRequest) = LoginResponse(success = true, token = "fake_token", error = null)
-                override suspend fun register(request: RegisterRequest) =throw NotImplementedError()
-                override suspend fun forgotPassword(request: ForgotPasswordRequest) = throw NotImplementedError()
+                override suspend fun login(request: LoginRequest) =
+                    LoginResponse(success = true, token = "fake_token", message = null)
+
+                override suspend fun register(request: RegisterRequest) =
+                    throw NotImplementedError()
+
+                override suspend fun forgotPassword(request: ForgotPasswordRequest) =
+                    throw NotImplementedError()
             },
             onRegisterClick = {},
-            onForgotPasswordClick = {}
+            onForgotPasswordClick = {},
+            onLoginSuccess = TODO()
         )
     }
-}
+}*/
 

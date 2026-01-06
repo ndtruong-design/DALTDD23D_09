@@ -1,5 +1,5 @@
 <?php
-header("Content-Type: application/json");
+header("Content-Type: application/json; charset=UTF-8");
 
 require_once "../config/db_connect.php";
 require_once "../vendor/autoload.php";
@@ -13,29 +13,36 @@ $username    = $data['TenDangNhap'] ?? '';
 $password = $data['MatKhau'] ?? '';
 
 if (!$username || !$password) {
-    echo json_encode(["error" => "Thiếu dữ liệu"]);
+    http_response_code(400);
+    echo json_encode([
+        "success" => false,
+        "message" => "Thiếu dữ liệu"
+    ]);
     exit;
 }
 
-
-$sql = "SELECT * FROM khachhang WHERE TenDangNhap=:TenDangNhap";
+$sql = "SELECT * FROM khachhang WHERE TenDangNhap=:username";
 $stmt = $conn->prepare($sql);
-$stmt->execute([":TenDangNhap" => $username]);
+$stmt->execute([":username" => $username]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user || !password_verify($password, $user['MatKhau'])) {
-    echo json_encode(["error" => "Sai tên đăng nhập hoặc mật khẩu"]);
+    http_response_code(401);
+    echo json_encode([
+        "success" => false,
+        "message" => "Sai tên đăng nhập hoặc mật khẩu"
+    ]);
     exit;
 }
 
 $payload = [
     "iss" => $JWT_ISSUER,
     "iat" => time(),
-    "exp" => $JWT_EXPIRE,
+    "exp" => time()+$JWT_EXPIRE,
     "data" => [
         "MaKhachHang" => $user['MaKhachHang'],
         "TenDangNhap" => $user['TenDangNhap'],
-        "email" => $user['email']
+       
     ]
 ];
 
@@ -43,6 +50,7 @@ $token = JWT::encode($payload, $JWT_SECRET, 'HS256');
 
 echo json_encode([
     "success" => true,
-    "token" => $token
+    "token" => $token,
+    "message" => "Đăng nhập thành công"
 ]);
 ?>
