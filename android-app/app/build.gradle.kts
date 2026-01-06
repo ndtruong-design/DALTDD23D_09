@@ -39,6 +39,17 @@ android {
     buildFeatures {
         compose = true
     }
+
+    packaging {
+        resources {
+            // Thêm dòng này để fix lỗi mới bạn vừa chụp
+            excludes += "/META-INF/io.netty.versions.properties"
+
+            // Các dòng cũ bạn đã có (nếu có)
+            excludes += "/META-INF/INDEX.LIST"
+            excludes += "/META-INF/DEPENDENCIES"
+        }
+    }
 }
 
 dependencies {
@@ -61,6 +72,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.animation.core.lint)
+    implementation(libs.firebase.appdistribution.gradle)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
