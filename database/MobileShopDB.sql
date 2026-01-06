@@ -142,7 +142,7 @@ CREATE TABLE DanhGia (
 );
 
 
----- Thêm dữ liệu mẫu vào các bảng
+-- Thêm dữ liệu mẫu vào các bảng
 
 -- 1. Thêm dữ liệu bảng Sản phẩm
 INSERT INTO SanPham (TenSanPham, MoTa, Hang, TrangThai) VALUES 
