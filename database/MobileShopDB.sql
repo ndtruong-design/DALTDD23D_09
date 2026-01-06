@@ -95,12 +95,12 @@ CREATE TABLE KhuyenMai (
 -- 10. Bảng Giỏ hàng (Đã gộp với Chi tiết giỏ hàng)
 CREATE TABLE GioHang (
     MaKhachHang INT NOT NULL,
-    MaSanPham INT NOT NULL,
+    MaChiTietSP INT NOT NULL,
     SoLuong INT DEFAULT 1,
     TrangThai INT DEFAULT 1, -- 1: Đang mua, 0: Đã đặt hàng
     FOREIGN KEY (MaKhachHang) REFERENCES KhachHang(MaKhachHang),
-    FOREIGN KEY (MaSanPham) REFERENCES SanPham(MaSanPham),
-    UNIQUE KEY unique_cart_item (MaKhachHang, MaSanPham)
+    FOREIGN KEY (MaChiTietSP) REFERENCES ChiTietSanPham(MaChiTietSP),
+    UNIQUE KEY unique_cart_item (MaKhachHang, MaChiTietSP)
 );
 
 -- 11. Bảng Đơn hàng
@@ -146,9 +146,9 @@ CREATE TABLE DanhGia (
 
 -- 1. Thêm dữ liệu bảng Sản phẩm
 INSERT INTO SanPham (TenSanPham, MoTa, Hang, TrangThai) VALUES 
-('iPhone 15 Pro Max', 1, 'Thiết kế khung titan chuẩn hàng không vũ trụ, bền bỉ và nhẹ.', 'Apple', 1),
-('Samsung Galaxy S24 Ultra', 2, 'Quyền năng Galaxy AI, Zoom mắt thần bóng đêm.', 'Samsung', 1),
-('Xiaomi Redmi Note 13 Pro', 3, 'Siêu phẩm tầm trung, camera 200MP.', 'Xiaomi', 1);
+('iPhone 15 Pro Max', 'Thiết kế khung titan chuẩn hàng không vũ trụ, bền bỉ và nhẹ.', 'Apple', 1),
+('Samsung Galaxy S24 Ultra', 'Quyền năng Galaxy AI, Zoom mắt thần bóng đêm.', 'Samsung', 1),
+('Xiaomi Redmi Note 13 Pro', 'Siêu phẩm tầm trung, camera 200MP.', 'Xiaomi', 1);
 
 -- 2.1. Thêm dữ liệu bảng Hình ảnh
 INSERT INTO HinhAnh (MaSanPham, DuongLinkAnh, LaAnhDaiDien) VALUES 
@@ -184,9 +184,9 @@ INSERT INTO KhachHang (TenDangNhap, HoTen, MatKhau, NgaySinh, SoDienThoai, Email
 ('tranthib', 'Trần Thị B', 'password', '2000-05-20', '0912345678', 'tranthib@example.com', '456 Đường Nguyễn Huệ, Q1, TP.HCM', 'https://example.com/avatar-b.jpg');
 
 -- 6.1. Thêm dữ liệu Giỏ hàng
-INSERT INTO GioHang (MaKhachHang, MaSanPham, SoLuong, TrangThai) VALUES 
-(1, 1, 1, 1), -- Khách hàng 1 thêm 1 iPhone vào giỏ
-(1, 2, 2, 1); -- Khách hàng 1 thêm 2 Samsung vào giỏ
+INSERT INTO GioHang (MaKhachHang, MaChiTietSP, SoLuong, TrangThai) VALUES 
+(1, 1, 1, 1), -- Khách hàng 1 thêm 1 iPhone 15 Pro Max (Chi tiết SP ID=1) vào giỏ
+(1, 4, 2, 1); -- Khách hàng 1 thêm 2 Samsung S24 Ultra (Chi tiết SP ID=4) vào giỏ
 
 -- 8. Thêm dữ liệu Admin
 INSERT INTO Admin (TenDangNhap, MatKhau) VALUES 
