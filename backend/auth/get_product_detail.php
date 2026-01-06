@@ -14,12 +14,10 @@ if (!$maSanPham) {
 }
 
 try {
-    // Get product info with specs
+    // Get product info
     $stmt = $conn->prepare("
-        SELECT sp.*, tst.ManHinh, tst.KichThuoc, tst.CameraSau, tst.CameraTruoc, tst.Pin, tst.HeDieuHanh, tst.CPU, tst.GPU, tst.RAM
-        FROM SanPham sp
-        LEFT JOIN ThongSoKyThuat tst ON sp.MaThongSo = tst.MaThongSo
-        WHERE sp.MaSanPham = :maSanPham AND sp.TrangThai = 1
+        SELECT * FROM SanPham
+        WHERE MaSanPham = :maSanPham AND TrangThai = 1
     ");
     $stmt->execute([':maSanPham' => $maSanPham]);
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -28,6 +26,16 @@ try {
         echo json_encode(['error' => 'Sản phẩm không tồn tại']);
         exit;
     }
+
+    // Get images
+    $stmt3 = $conn->prepare("
+        SELECT * FROM HinhAnh
+        WHERE MaSanPham = :maSanPham
+    ");
+    $stmt3->execute([':maSanPham' => $maSanPham]);
+    $images = $stmt3->fetchAll(PDO::FETCH_ASSOC);
+
+    $product['images'] = $images;
 
     // Get variants
     $stmt2 = $conn->prepare("
