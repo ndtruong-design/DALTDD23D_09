@@ -11,10 +11,11 @@ data class LoginRequest(
     val MatKhau: String
 )
 data class LoginResponse(
-    val success: Boolean? = false,
-    val token: String? = null,
-    val error: String? = null
+    val success: Boolean,
+    val token: String?,
+    val message: String?
 )
+
 
 data class RegisterRequest(
     val TenDangNhap: String,
