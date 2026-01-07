@@ -1,6 +1,5 @@
 package com.example.appbandienthoai
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -22,7 +21,6 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -56,7 +54,8 @@ import androidx.lint.kotlin.metadata.Visibility
 import com.example.appbandienthoai.ui.theme.AppBanDienThoaiTheme
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
-
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.layout.Box
 
 @Composable
 fun LoginScreen(
@@ -85,13 +84,21 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(40.dp))
 
         //logo
-        Image(
-            painter = painterResource(id = R.drawable.logo_shop),
-            contentDescription = null,
+        Box(
             modifier = Modifier
-                .width(200.dp) // Điều chỉnh kích thước logo tùy ý
-                .height(100.dp)
-        )
+                .fillMaxWidth()
+                .height(150.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.logo_shop),
+                contentDescription = null,
+                modifier = Modifier.size(400.dp),
+                contentScale = ContentScale.Fit // Đảm bảo ảnh không bị méo
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         Spacer(modifier = Modifier.height(30.dp))
 
@@ -183,7 +190,7 @@ fun LoginScreen(
 
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A1B9A))
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7))
         ) {
             if (loading) {
                 CircularProgressIndicator(modifier = Modifier.height(20.dp).width(20.dp), color = Color.White, strokeWidth = 2.dp)
