@@ -152,12 +152,18 @@ INSERT INTO SanPham (TenSanPham, MoTa, Hang, TrangThai) VALUES
 
 -- 2.1. Thêm dữ liệu bảng Hình ảnh
 INSERT INTO HinhAnh (MaSanPham, DuongLinkAnh, LaAnhDaiDien) VALUES 
-(1, 'https://example.com/iphone-main.jpg', TRUE),  -- Ảnh đại diện iPhone
-(1, 'https://example.com/iphone-detail.jpg', FALSE), -- Ảnh chi tiết iPhone
-(2, 'https://example.com/samsung-main.jpg', TRUE),   -- Ảnh đại diện Samsung
-(2, 'https://example.com/samsung-detail.jpg', FALSE), -- Ảnh chi tiết Samsung
-(3, 'https://example.com/xiaomi-main.jpg', TRUE),    -- Ảnh đại diện Xiaomi
-(3, 'https://example.com/xiaomi-detail.jpg', FALSE);  -- Ảnh chi tiết Xiaomi
+(1, 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-15-pro-max_2__5_2_1_1.jpg', TRUE),  -- Ảnh đại diện iPhone
+(1, 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-15-pro-max_4__1.jpg', FALSE), -- Ảnh chi tiết iPhone
+(1, 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-15-pro-max_5__1.jpg', FALSE), -- Ảnh chi tiết iPhone
+(1,'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-15-pro-max_6__1.jpg', FALSE), -- Ảnh chi tiết iPhone
+(2, 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/s/s/ss-s24-ultra-den-600.png', TRUE),   -- Ảnh đại diện Samsung
+(2, 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-s24-ultra_5_.png', FALSE),
+(2,'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-s24-ultra_6_.png', FALSE),
+(2,'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-s24-ultra_7_.png', FALSE), -- Ảnh chi tiết Samsung
+(3, 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/x/i/xiaomi-redmi-note-13-pro-4g_13__1_3.png', TRUE),    -- Ảnh đại diện Xiaomi
+(3, 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/x/i/xiaomi-redmi-note-13-pro-4g_6__1_3.png', FALSE),
+(3, 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/x/i/xiaomi_redmi_note_13_pro_4g_3.png', FALSE),
+(3,'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/x/i/xiaomi-redmi-note-13-pro-4g_4__1_3.png', FALSE);  -- Ảnh chi tiết Xiaomi
 
 -- 3. Thêm dữ liệu bảng Màu sắc
 INSERT INTO MauSac (TenMau) VALUES 
@@ -218,5 +224,7 @@ INSERT INTO DanhGia (NoiDung, MaDonHang, TrangThai) VALUES
 
 -- 14. Thêm dữ liệu Quảng cáo (Banner)
 INSERT INTO QuangCao (HinhAnh, TrangThai) VALUES 
-('https://example.com/banner-iphone15.jpg', 1),
-('https://example.com/banner-s24ultra.jpg', 1);
+('https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-15-plus_1__1.png', 1),
+('https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-z-flip-7-1.jpg', 1),
+('https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/d/i/dien-thoai-oppo-find-n5_h_nh_2.png',1),
+('https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/_/i/_i_n_tho_i_honor_x6c_6gb_128gb-1_1.jpg',1)
