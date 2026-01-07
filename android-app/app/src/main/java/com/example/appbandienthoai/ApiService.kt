@@ -1,5 +1,7 @@
 package com.example.appbandienthoai
 
+import com.google.gson.annotations.SerializedName
+import okhttp3.Call
 import okhttp3.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -67,12 +69,17 @@ data class Picture(
     val DuongLinkAnh: String,
     val LaAnhDaiDien: Int
 )
+data class Advertise(
 
-data class Advertisement(
-    val MaQuangCao: Int,
-    val HinhAnh: String,
+    val MaHinhAnh: Int,
 
+    val HinhAnh:String
 )
+
+
+
+
+
 
 interface ApiService {
 
@@ -84,5 +91,19 @@ interface ApiService {
 
     @POST("forgotpassword.php")
     suspend fun forgotPassword(@Body request: ForgotPasswordRequest): ForgotPasswordResponse
+
+    @GET("get_ads.php")
+    suspend fun getAds():List<Advertise>
+
+    @GET("get_products.php")
+    suspend fun getProduct():List<Product>
+
+    @GET("get_product_detail.php")
+    suspend fun getProductDetail():List<ProductDetail>
+
+    @GET("get_products.php")
+    suspend fun getProduct():List<Product>
+
+
 }
 

@@ -168,6 +168,7 @@ fun ForgotPasswordScreenPreview() {
                     message = "Preview message",
                     token = "fake_token"
                 )
+            override suspend fun getAds(): List<Advertise> = emptyList()
         },
         onBackToLogin = {}
     )

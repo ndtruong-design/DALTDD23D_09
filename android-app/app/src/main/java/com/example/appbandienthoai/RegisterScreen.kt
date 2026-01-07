@@ -181,6 +181,7 @@ fun RegisterScreenPreview() {
                     success = true,
                     message = "Đăng ký thành công"
                 )
+            override suspend fun getAds(): List<Advertise> = emptyList()
         },
         onLoginClick = {}
     )

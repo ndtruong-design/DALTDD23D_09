@@ -207,6 +207,7 @@ fun LoginScreenPreview() {
                 override suspend fun login(request: LoginRequest) = LoginResponse(success = true, token = "fake_token", error = null)
                 override suspend fun register(request: RegisterRequest) =throw NotImplementedError()
                 override suspend fun forgotPassword(request: ForgotPasswordRequest) = throw NotImplementedError()
+                override suspend fun getAds(): List<Advertise> = emptyList()
             },
             onRegisterClick = {},
             onForgotPasswordClick = {}
