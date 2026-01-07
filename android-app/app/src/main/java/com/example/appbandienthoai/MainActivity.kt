@@ -3,10 +3,7 @@ package com.example.appbandienthoai
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -17,11 +14,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            //AppNavigation()
-            MainScreen()
+            AppBanDienThoaiTheme {
+                AppNavigation()
+                //MainScreen()
+
+            }
         }
     }
 }
+
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -43,7 +44,6 @@ fun AppNavigation() {
             )
         }
 
-
         composable("register") {
             RegisterScreen(
                 api = RetrofitClient.api,
@@ -52,6 +52,7 @@ fun AppNavigation() {
                 }
             )
         }
+
         composable("main") {
             MainScreen()
         }
@@ -62,11 +63,5 @@ fun AppNavigation() {
                 onBackToLogin = { navController.popBackStack() }
             )
         }
-
     }
 }
-
-
-
-
-

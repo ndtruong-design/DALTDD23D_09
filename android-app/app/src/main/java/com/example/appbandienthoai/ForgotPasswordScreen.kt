@@ -169,6 +169,14 @@ fun ForgotPasswordScreenPreview() {
                     token = "fake_token"
                 )
             override suspend fun getAds(): List<Advertise> = emptyList()
+            override suspend fun getProduct(): List<Product> {
+                TODO("Not yet implemented")
+            }
+
+            override suspend fun getProductDetail(id: Int): List<ProductDetail> {
+                TODO("Not yet implemented")
+            }
+
         },
         onBackToLogin = {}
     )
