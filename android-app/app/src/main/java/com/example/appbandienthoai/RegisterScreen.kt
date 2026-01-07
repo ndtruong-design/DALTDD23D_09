@@ -129,7 +129,7 @@ fun RegisterScreen(api: ApiService, onLoginClick: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- PHONE (Giữ logic Phone nhưng style theo giao diện mới) ---
+
             OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it },
@@ -154,7 +154,7 @@ fun RegisterScreen(api: ApiService, onLoginClick: () -> Unit) {
                 trailingIcon = {
                     IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                         Icon(
-                            imageVector = if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                            imageVector = if (isPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                             contentDescription = ""
                         )
                     }
@@ -163,7 +163,7 @@ fun RegisterScreen(api: ApiService, onLoginClick: () -> Unit) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // --- BUTTON ĐĂNG KÝ (Style mới, Logic cũ) ---
+
             Button(
                 onClick = {
                     // Logic cũ được giữ nguyên
@@ -206,7 +206,7 @@ fun RegisterScreen(api: ApiService, onLoginClick: () -> Unit) {
                 )
             }
 
-            // Hiển thị lỗi (Logic cũ)
+
             if(error.isNotEmpty()){
                 Spacer(Modifier.height(8.dp))
                 Text(error, color = Color.Red)
@@ -214,7 +214,7 @@ fun RegisterScreen(api: ApiService, onLoginClick: () -> Unit) {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // --- FOOTER (Giống RegisterScreen2) ---
+
             Row(
                 modifier = Modifier.padding(bottom = 32.dp),
                 verticalAlignment = Alignment.CenterVertically
