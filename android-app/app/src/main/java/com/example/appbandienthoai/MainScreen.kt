@@ -53,16 +53,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import androidx.navigation.Navigation
 import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(modifier: Modifier = Modifier) {
+fun MainScreen(modifier: Modifier = Modifier, navController: NavHostController) {
     var productList by remember { mutableStateOf<List<Product>>(emptyList()) }
     var adsList by remember { mutableStateOf<List<Advertise>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
-
+    val brands = productList
+        .map { it.Hang }
+        .distinct()
     LaunchedEffect(Unit) {
         try {
             val adsResult = RetrofitClient.api.getAds()
@@ -130,7 +133,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                 .padding(padding),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            // 1. Thanh tìm kiếm
+
             item {
                 Row(
                     modifier = Modifier
@@ -150,13 +153,19 @@ fun MainScreen(modifier: Modifier = Modifier) {
                             unfocusedIndicatorColor = Color.Transparent
                         )
                     )
-                    IconButton(onClick = {}) {
+                    IconButton(
+                        onClick = {
+                            val brandString = brands.joinToString(",")
+                            navController.navigate("filter/$brandString")
+                        }
+                    ) {
                         Icon(Icons.Default.FilterAlt, contentDescription = "Loc")
                     }
+
                 }
             }
 
-            // 2. Banner Quảng cáo
+
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 if (adsList.isNotEmpty()) {
@@ -200,7 +209,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                             modifier = Modifier.weight(1f)
                         )
                     }
-                    // Nếu dòng cuối chỉ có 1 sản phẩm, thêm một Box trống để giữ đúng layout
+
                     if (rowItems.size == 1) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
@@ -217,6 +226,8 @@ fun MainScreen(modifier: Modifier = Modifier) {
 
         }
     }
+
+
 }
 
 @Composable
@@ -236,8 +247,7 @@ fun ProductItem(product: Product, modifier: Modifier = Modifier) {
                     .padding(8.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Ở đây tạm thời dùng ảnh mặc định vì Product chưa có HinhAnh, 
-                // bạn nên bổ sung HinhAnh vào class Product trong ApiService
+
                 AsyncImage(
                     model = product.DuongLinkAnh,
                     contentDescription = product.TenSanPham,
@@ -261,7 +271,7 @@ fun ProductItem(product: Product, modifier: Modifier = Modifier) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Liên hệ", // Vì class Product của bạn chưa có trường Gia
+                    text = "Giá ${product.Gia}",
                     color = Color(0xFF6A1B9A),
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp

@@ -46,7 +46,9 @@ data class Product(
     val MoTa: String,
     val Hang: String,
     val TrangThai: Int,
-    val DuongLinkAnh: String
+    val Gia: Int,
+    val DuongLinkAnh: String,
+    val BoNho:String
 )
 
 data class ProductDetail(
@@ -72,9 +74,14 @@ data class ProductDetail(
 data class Advertise(
 
     val MaHinhAnh: Int,
-
     val HinhAnh: String
 )
+data class FilterResponse(
+    val success: Boolean,
+    val data: List<Product>
+)
+
+
 
 interface ApiService {
     @POST("login.php")
@@ -93,6 +100,12 @@ interface ApiService {
     suspend fun getProduct(): List<Product>
 
 
+    @GET("filter.php")
+    suspend fun filterProducts(
+        @Query("min") min: Int?,
+        @Query("max") max: Int?,
+        @Query("hang") hang: String?
+    ): FilterResponse
 
     @GET("get_product_detail.php")
     suspend fun getProductDetail(@Query("MaSanPham") id: Int):List<ProductDetail>

@@ -120,9 +120,14 @@ fun ForgotPasswordScreen(onBackToLogin: () -> Unit, api: ApiService) {
             Button(
                 onClick = {
                     scope.launch {
+                        if (newPassword.isBlank()) {
+                        error = "Vui lòng nhập mật khẩu mới"
+                        return@launch
+                    }
                         try {
                             val request = ForgotPasswordRequest(SoDienThoai = phone, MatKhau = newPassword)
                             val response = api.forgotPassword(request)
+
 
                             if (response.success) {
                                 onBackToLogin()
@@ -170,6 +175,14 @@ fun ForgotPasswordScreenPreview() {
                 )
             override suspend fun getAds(): List<Advertise> = emptyList()
             override suspend fun getProduct(): List<Product> {
+                TODO("Not yet implemented")
+            }
+
+            override suspend fun filterProducts(
+                min: Int?,
+                max: Int?,
+                hang: String?
+            ): FilterResponse {
                 TODO("Not yet implemented")
             }
 

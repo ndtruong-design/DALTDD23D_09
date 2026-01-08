@@ -56,6 +56,7 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.Checkbox
 
 @Composable
 fun LoginScreen(
@@ -111,7 +112,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(60.dp))
 
-        // nhập tên dn
+
         InputSection(
             label = "Tên đăng nhập",
             placeholder = "Nhập tên đăng nhập của bạn",
@@ -131,14 +132,14 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-//        Row(verticalAlignment = Alignment.CenterVertically) {
-//            Checkbox(checked = rememberMe, onCheckedChange = { rememberMe = it })
-//            Text("Ghi nhớ tôi")
-//            Spacer(Modifier.weight(1f))
-//            Text("Quên mật khẩu", color = Color(0xFF6A1B9A),
-//                fontWeight = FontWeight.Bold,
-//                modifier = Modifier.clickable { onForgotPasswordClick() })
-//        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(checked = rememberMe, onCheckedChange = { rememberMe = it })
+            Text("Ghi nhớ tôi")
+            Spacer(Modifier.weight(1f))
+            Text("Quên mật khẩu", color = Color(0xFF6A1B9A),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable { onForgotPasswordClick() })
+        }
 
 
 
@@ -173,15 +174,14 @@ fun LoginScreen(
                         }
 
                     } catch (e: HttpException) {
-                        // Lỗi 401, 404, 500 từ server (Server vẫn sống nhưng trả về mã lỗi)
+
                         errorMessage = "Sai tài khoản hoặc lỗi server: ${e.code()}"
                         Log.e("LOGIN_API", "Http Error: ${e.message()}")
 
                     } catch (e: Exception) {
-                        // Lỗi mất mạng, sai JSON, timeout...
-                        // QUAN TRỌNG: In lỗi chi tiết ra để xem
+
                         errorMessage = "Lỗi hệ thống: ${e.message}"
-                        Log.e("LOGIN_API", "Exception: ", e) // In toàn bộ log đỏ lòm trong Logcat
+                        Log.e("LOGIN_API", "Exception: ", e)
                     } finally {
                         loading = false
                     }
@@ -201,21 +201,21 @@ fun LoginScreen(
 
         Spacer(Modifier.height(16.dp))
 
-        Row(
-            modifier = Modifier.padding(bottom = 32.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Quên mật khẩu?",
-                color = Color.Black,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                textDecoration = TextDecoration.Underline,
-                modifier = Modifier.clickable {
-                    onForgotPasswordClick()
-                }
-            )
-        }
+//        Row(
+//            modifier = Modifier.padding(bottom = 32.dp),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Text(
+//                text = "Quên mật khẩu?",
+//                color = Color.Black,
+//                fontWeight = FontWeight.Bold,
+//                fontSize = 14.sp,
+//                textDecoration = TextDecoration.Underline,
+//                modifier = Modifier.clickable {
+//                    onForgotPasswordClick()
+//                }
+//            )
+//        }
 
         Spacer(Modifier.height(10.dp))
 
@@ -246,17 +246,17 @@ fun LoginScreen(
         ) {
             SocialMediaButton(
                 iconRes = R.drawable.logo_google,
-                onClick = { /* Xử lý đăng nhập Google */ }
+                onClick = { }
             )
             SocialMediaButton(
                 iconRes = R.drawable.logo_fb,
-                onClick = { /* Xử lý đăng nhập Facebook */ }
+                onClick = {  }
             )
         }
 
-        Spacer(modifier = Modifier.weight(1f)) // Đẩy phần footer xuống dưới cùng
+        Spacer(modifier = Modifier.weight(1f))
 
-        // từ đ nhập qua đăng ký
+
         Row(
             modifier = Modifier.padding(bottom = 16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -341,7 +341,7 @@ fun InputSection(
             visualTransformation = if (isPassword && !passwordVisible) {
                 PasswordVisualTransformation()
             } else {
-                androidx.compose.ui.text.input.VisualTransformation.None
+                VisualTransformation.None
             },
             // 3. Thêm icon ở cuối ô nhập liệu
             trailingIcon = {

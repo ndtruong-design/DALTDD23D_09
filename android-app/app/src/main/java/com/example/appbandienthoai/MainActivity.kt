@@ -16,7 +16,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppBanDienThoaiTheme {
                 AppNavigation()
-                //MainScreen()
+
 
             }
         }
@@ -29,7 +29,7 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = "main"
     ) {
         composable("login") {
             LoginScreen(
@@ -54,7 +54,8 @@ fun AppNavigation() {
         }
 
         composable("main") {
-            MainScreen()
+            MainScreen(navController = navController)
+
         }
 
         composable("forgot") {
@@ -63,5 +64,19 @@ fun AppNavigation() {
                 onBackToLogin = { navController.popBackStack() }
             )
         }
+
+        composable(
+            route = "filter/{brands}"
+        ) { backStackEntry ->
+            val brandsParam = backStackEntry.arguments?.getString("brands") ?: ""
+            val brands = brandsParam.split(",").filter { it.isNotBlank() }
+
+            FilterScreen(
+                api = RetrofitClient.api,
+                navController = navController,
+                brands = brands
+            )
+        }
+
     }
 }

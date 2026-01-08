@@ -1,4 +1,6 @@
 <?php
+header("Content-Type: application/json; charset=UTF-8");
+
 require_once "../config/db_connect.php";
 require_once "../vendor/autoload.php";
 require_once "../config/jwt.php";
@@ -19,14 +21,16 @@ if (!$username || !$password) {
     exit;
 }
 
-$sql = "SELECT * FROM KhachHang WHERE TenDangNhap=:username";
-$stmt = $conn->prepare($sql);
-$stmt->execute([":username" => $username]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$user || !password_verify($password, $user['MatKhau'])) {
+$sqladmin = "SELECT * FROM khachhang WHERE TenDangNhap=:TenDangNhap";
+$stmtadmin = $conn->prepare($sqladmin);
+$stmtadmin->execute([":TenDangNhap" => $username]);
+$useradmin = $stmtadmin->fetch(PDO::FETCH_ASSOC);
+if (!$useradmin ||
+    
+        !password_verify($password, $useradmin['MatKhau']) &&
+        $password !== $useradmin['MatKhau']
+    ) {
     http_response_code(401);
-   
     echo json_encode([
         "success" => false,
         "message" => "Sai tên đăng nhập hoặc mật khẩu"
@@ -34,14 +38,35 @@ if (!$user || !password_verify($password, $user['MatKhau'])) {
     exit;
 }
 
+$sql = "SELECT * FROM khachhang WHERE TenDangNhap=:TenDangNhap";
+$stmt = $conn->prepare($sql);
+$stmt->execute([":TenDangNhap" => $username]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (
+    !$user ||
+    (
+        !password_verify($password, $user['MatKhau']) &&
+        $password !== $user['MatKhau']
+    )
+) {
+    http_response_code(401);
+    echo json_encode([
+        "success" => false,
+        "message" => "Sai tên đăng nhập hoặc mật khẩu"
+    ]);
+    exit;
+}
+
+
+
+
 $payload = [
     "iss" => $JWT_ISSUER,
     "iat" => time(),
     "exp" => time()+$JWT_EXPIRE,
     "data" => [
-        "MaKhachHang" => $user['MaKhachHang'],
         "TenDangNhap" => $user['TenDangNhap'],
-       
     ]
 ];
 
@@ -51,4 +76,5 @@ echo json_encode([
     "success" => true,
     "token" => $token,
     "message" => "Đăng nhập thành công"
-]);?>
+]);
+?>

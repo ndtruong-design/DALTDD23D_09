@@ -7,8 +7,8 @@ plugins {
 android {
     namespace = "com.example.appbandienthoai"
     compileSdk {
-        version = release(36)
-    }
+        version = release(36)    }
+
 
     defaultConfig {
         applicationId = "com.example.appbandienthoai"
