@@ -65,6 +65,7 @@
             modifier = Modifier.fillMaxSize(),
             color = Color.White
         ) {
+<<<<<<< HEAD
             Box(modifier = Modifier.fillMaxSize()) {
                 // Nút Back (Giao diện mới)
                 IconButton(
@@ -78,10 +79,114 @@
                         contentDescription = "Back",
                         tint = Color.Black
                     )
+=======
+
+            Spacer(modifier = Modifier.height(65.dp))
+
+            //logo
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo_shop),
+                    contentDescription = null,
+                    modifier = Modifier.size(400.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            Text(
+                text = "Tạo tài khoản mới",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            // --- USERNAME ---
+            OutlinedTextField(
+                value = username,
+                onValueChange = { username = it },
+                label = { Text("Tên người dùng") },
+                placeholder = { Text("Nhập tên đăng nhập") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+
+            OutlinedTextField(
+                value = phone,
+                onValueChange = { phone = it },
+                label = { Text("Số điện thoại") },
+                placeholder = { Text("Nhập số điện thoại") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- PASSWORD ---
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Mật khẩu") },
+                placeholder = { Text("Nhập mật khẩu") },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                shape = RoundedCornerShape(12.dp),
+                trailingIcon = {
+                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                        Icon(
+                            imageVector = if (isPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = ""
+                        )
+                    }
+>>>>>>> 6ca6197cc32c827e382e45e3814aadadb7bce635
                 }
             }
 
+<<<<<<< HEAD
             Column(
+=======
+            Spacer(modifier = Modifier.height(32.dp))
+
+
+            Button(
+                onClick = {
+                    // Logic cũ được giữ nguyên
+                    scope.launch {
+                        if(username.isBlank() || phone.isBlank() || password.isBlank()){
+                            error = "Vui lòng nhập đầy đủ thông tin"
+                            return@launch
+                        }
+                        loading = true
+                        error = ""
+                        try {
+                            val request = RegisterRequest(username, phone, password)
+                            val response = api.register(request)
+                            if(response.success){
+                                error = ""
+                                onLoginClick()
+                            } else {
+                                error = response.message
+                            }
+                        } catch(e: Exception){
+                            error = "Không kết nối được server"
+                        } finally {
+                            loading = false
+                        }
+                    }
+                },
+>>>>>>> 6ca6197cc32c827e382e45e3814aadadb7bce635
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 24.dp),
@@ -89,7 +194,15 @@
                 verticalArrangement = Arrangement.Center
             ) {
 
+<<<<<<< HEAD
                 Spacer(modifier = Modifier.height(65.dp))
+=======
+
+            if(error.isNotEmpty()){
+                Spacer(Modifier.height(8.dp))
+                Text(error, color = Color.Red)
+            }
+>>>>>>> 6ca6197cc32c827e382e45e3814aadadb7bce635
 
                 //logo
                 Box(
@@ -108,6 +221,14 @@
 
                 Spacer(modifier = Modifier.height(40.dp))
 
+<<<<<<< HEAD
+=======
+
+            Row(
+                modifier = Modifier.padding(bottom = 32.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+>>>>>>> 6ca6197cc32c827e382e45e3814aadadb7bce635
                 Text(
                     text = "Tạo tài khoản mới",
                     fontSize = 24.sp,

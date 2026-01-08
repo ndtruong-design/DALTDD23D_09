@@ -15,8 +15,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             AppBanDienThoaiTheme {
+<<<<<<< HEAD
                 AppNavigation()
 
+=======
+               // AppNavigation()
+                MainScreen()
+>>>>>>> 6ca6197cc32c827e382e45e3814aadadb7bce635
 
             }
         }

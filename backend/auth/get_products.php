@@ -1,3 +1,4 @@
+
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -7,7 +8,18 @@ header('Access-Control-Allow-Headers: Content-Type');
 require_once '../config/db_connect.php';
 
 try {
-    $stmt = $conn->prepare("SELECT * FROM SanPham WHERE TrangThai = 1");
+    $sql = "SELECT
+    sp.*,
+    ct.Gia,
+    ha.DuongLinkAnh
+FROM sanpham sp
+LEFT JOIN chitietsanpham ct ON sp.MaSanPham = ct.MaSanPham
+LEFT JOIN hinhanh ha ON sp.MaSanPham = ha.MaSanPham AND ha.LaAnhDaiDien = 1 
+WHERE sp.TrangThai = 1";
+
+ 
+            
+    $stmt = $conn->prepare($sql);
     $stmt->execute();
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -16,3 +28,4 @@ try {
     echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
 }
 ?>
+

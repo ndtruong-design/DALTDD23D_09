@@ -1,6 +1,7 @@
 package com.example.appbandienthoai
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -90,9 +92,9 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavHostController) 
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Phone-Shop", fontWeight = FontWeight.Bold)
+                        Text(text = "Mobile Store", fontWeight = FontWeight.Bold)
                         IconButton(onClick = {}) {
-                            Icon(Icons.Default.Favorite, contentDescription = "Yeu thich")
+                            Icon(Icons.Default.Favorite, contentDescription = "Yêu thích")
                         }
                     }
                 }
@@ -165,26 +167,68 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavHostController) 
                 }
             }
 
+<<<<<<< HEAD
 
             item {
                 Spacer(modifier = Modifier.height(16.dp))
+=======
+            // 2. Banner Quảng cáo
+            item  {
+>>>>>>> 6ca6197cc32c827e382e45e3814aadadb7bce635
                 if (adsList.isNotEmpty()) {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    // Khởi tạo trạng thái Pager
+                    val pagerState = androidx.compose.foundation.pager.rememberPagerState(pageCount = { adsList.size })
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        items(adsList) { ad ->
+                        // Pager cho phép vuốt banner
+                        androidx.compose.foundation.pager.HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(180.dp), // Điều chỉnh chiều cao cho phù hợp hình ảnh
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            pageSpacing = 12.dp
+                        ) { page ->
+                            val ad = adsList[page]
                             Card(
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier
-                                    .width(300.dp)
-                                    .height(150.dp)
+                                shape = RoundedCornerShape(16.dp),
+                                modifier = Modifier.fillMaxSize(),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                             ) {
                                 AsyncImage(
                                     model = ad.HinhAnh,
                                     contentDescription = null,
                                     modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
+                                    contentScale = ContentScale.FillBounds // Hiển thị đầy đủ theo khung hình
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Các dấu chấm (Dots Indicator)
+                        Row(
+                            Modifier
+                                .height(8.dp)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            repeat(adsList.size) { iteration ->
+                                val color = if (pagerState.currentPage == iteration) Color.Red else Color.LightGray
+                                val width = if (pagerState.currentPage == iteration) 12.dp else 8.dp
+
+                                Box(
+                                    modifier = Modifier
+                                        .padding(2.dp)
+                                        .clip(CircleShape)
+                                        .background(color)
+                                        .width(width)
+                                        .height(8.dp)
                                 )
                             }
                         }

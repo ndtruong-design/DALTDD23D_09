@@ -219,11 +219,26 @@ fun LoginScreen(
 
         Spacer(Modifier.height(10.dp))
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
-        ) {
+//        Row(
+//            verticalAlignment = Alignment.CenterVertically,
+//            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+//        ) {
+//
+//            HorizontalDivider(modifier = Modifier.weight(1f), thickness = 1.dp, color = Color.LightGray)
+//
+//            Text(
+//                text = "Hoặc",
+//                modifier = Modifier.padding(horizontal = 8.dp),
+//                fontSize = 12.sp,
+//                color = Color.Gray
+//            )
+//
+//            HorizontalDivider(modifier = Modifier.weight(1f), thickness = 1.dp, color = Color.LightGray)
+//        }
+//
+//        Spacer(Modifier.height(16.dp))
 
+<<<<<<< HEAD
             HorizontalDivider(modifier = Modifier.weight(1f), thickness = 1.dp, color = Color.LightGray)
 
             Text(
@@ -253,6 +268,23 @@ fun LoginScreen(
                 onClick = {  }
             )
         }
+=======
+//        Spacer(modifier = Modifier.height(16.dp))
+//
+//        Row(
+//            modifier = Modifier.fillMaxWidth(),
+//            horizontalArrangement = Arrangement.SpaceEvenly
+//        ) {
+//            SocialMediaButton(
+//                iconRes = R.drawable.logo_google,
+//                onClick = { /* Xử lý đăng nhập Google */ }
+//            )
+//            SocialMediaButton(
+//                iconRes = R.drawable.logo_fb,
+//                onClick = { /* Xử lý đăng nhập Facebook */ }
+//            )
+//        }
+>>>>>>> 6ca6197cc32c827e382e45e3814aadadb7bce635
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -365,24 +397,24 @@ fun InputSection(
     }
 }
 
-@Composable
-fun SocialMediaButton(
-    iconRes: Int,
-    onClick: () -> Unit
-) {
-    OutlinedButton(
-        onClick = onClick,
-        modifier = Modifier
-            .size(60.dp), // Kích thước nút vuông
-        shape = RoundedCornerShape(12.dp),
-        contentPadding = PaddingValues(12.dp), // Khoảng cách từ viền nút đến icon
-        colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, Color.LightGray)
-    ) {
-        Image(
-            painter = painterResource(id = iconRes),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
+//@Composable
+//fun SocialMediaButton(
+//    iconRes: Int,
+//    onClick: () -> Unit
+//) {
+//    OutlinedButton(
+//        onClick = onClick,
+//        modifier = Modifier
+//            .size(60.dp), // Kích thước nút vuông
+//        shape = RoundedCornerShape(12.dp),
+//        contentPadding = PaddingValues(12.dp), // Khoảng cách từ viền nút đến icon
+//        colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White),
+//        border = BorderStroke(1.dp, Color.LightGray)
+//    ) {
+//        Image(
+//            painter = painterResource(id = iconRes),
+//            contentDescription = null,
+//            modifier = Modifier.fillMaxSize()
+//        )
+//    }
+//}
