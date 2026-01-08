@@ -16,6 +16,6 @@ data class BottomNavItem (
 val bottomNavItems=listOf(
     BottomNavItem("Trang chủ", Icons.Default.Home,"home"),
     BottomNavItem("Giỏ hàng", Icons.Default.ShoppingCart,"cart"),
-    BottomNavItem("Đơn hàng", Icons.Default.DeliveryDining,"donhang"),
+    BottomNavItem("Đơn hàng", Icons.Default.DeliveryDining,"don_hang"),
     BottomNavItem("Tài khoản", Icons.Default.Person,"profile")
 )

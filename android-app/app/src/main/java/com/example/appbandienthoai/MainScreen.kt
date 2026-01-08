@@ -159,7 +159,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
             }
 
             // 2. Banner Quảng cáo
-            item {
+            item  {
                 if (adsList.isNotEmpty()) {
                     // Khởi tạo trạng thái Pager
                     val pagerState = androidx.compose.foundation.pager.rememberPagerState(pageCount = { adsList.size })
