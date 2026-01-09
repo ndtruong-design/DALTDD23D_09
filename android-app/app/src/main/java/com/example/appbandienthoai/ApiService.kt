@@ -81,13 +81,29 @@ data class FilterResponse(
     val data: List<Product>
 )
 
+data class OrderHistoryResponse(
+    val success: Boolean,
+    val data: List<Order>
+)
 
+data class Order(
+    @SerializedName("order_id") val MaDonHang: Int,
+    @SerializedName("date_ordered") val NgayDatHang: String,
+    @SerializedName("total_price_formatted") val TongTienHienThi: String,
+    @SerializedName("status_text") val TrangThaiText: String,
+    @SerializedName("status_code") val TrangThaiCode: Int,
+    @SerializedName("payment_status_text") val TrangThaiThanhToan: String,
+    @SerializedName("items") val ChiTiet: List<OrderItem>
+)
 
-
-
-
-
-
+data class OrderItem(
+    @SerializedName("product_name") val TenSanPham: String,
+    @SerializedName("variant_info") val ThongTinPhienBan: String,
+    @SerializedName("color") val MauSac: String,
+    @SerializedName("quantity") val SoLuong: Int,
+    @SerializedName("price_formatted") val GiaHienThi: String,
+    @SerializedName("image") val HinhAnh: String
+)
 
 
 interface ApiService {
@@ -117,4 +133,7 @@ interface ApiService {
     @GET("get_product_detail.php")
     suspend fun getProductDetail(@Query("MaSanPham") id: Int):List<ProductDetail>
 
+
+    @GET("get_order_history.php")
+    suspend fun getOrderHistory(@Query("user_id") userId: Int): OrderHistoryResponse
 }
