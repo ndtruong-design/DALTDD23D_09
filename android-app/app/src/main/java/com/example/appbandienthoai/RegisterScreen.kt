@@ -1,310 +1,153 @@
-    package com.example.appbandienthoai
+package com.example.appbandienthoai
 
-    import androidx.compose.foundation.Image
-    import androidx.compose.foundation.clickable
-    import androidx.compose.foundation.layout.Arrangement
-    import androidx.compose.foundation.layout.Box
-    import androidx.compose.foundation.layout.Column
-    import androidx.compose.foundation.layout.Row
-    import androidx.compose.foundation.layout.Spacer
-    import androidx.compose.foundation.layout.fillMaxSize
-    import androidx.compose.foundation.layout.fillMaxWidth
-    import androidx.compose.foundation.layout.height
-    import androidx.compose.foundation.layout.padding
-    import androidx.compose.foundation.layout.size
-    import androidx.compose.foundation.layout.width
-    import androidx.compose.foundation.shape.RoundedCornerShape
-    import androidx.compose.foundation.text.KeyboardOptions
-    import androidx.compose.material.icons.Icons
-    import androidx.compose.material.icons.filled.ArrowBack
-    import androidx.compose.material.icons.filled.Visibility
-    import androidx.compose.material.icons.filled.VisibilityOff
-    import androidx.compose.material3.Button
-    import androidx.compose.material3.ButtonDefaults
-    import androidx.compose.material3.Icon
-    import androidx.compose.material3.IconButton
-    import androidx.compose.material3.OutlinedTextField
-    import androidx.compose.material3.Surface
-    import androidx.compose.material3.Text
-    import androidx.compose.runtime.Composable
-    import androidx.compose.runtime.getValue
-    import androidx.compose.runtime.mutableStateOf
-    import androidx.compose.runtime.remember
-    import androidx.compose.runtime.rememberCoroutineScope
-    import androidx.compose.runtime.setValue
-    import androidx.compose.ui.Alignment
-    import androidx.compose.ui.Modifier
-    import androidx.compose.ui.graphics.Color
-    import androidx.compose.ui.layout.ContentScale
-    import androidx.compose.ui.res.painterResource
-    import androidx.compose.ui.text.font.FontWeight
-    import androidx.compose.ui.text.input.KeyboardType
-    import androidx.compose.ui.text.input.PasswordVisualTransformation
-    import androidx.compose.ui.text.input.VisualTransformation
-    import androidx.compose.ui.tooling.preview.Preview
-    import androidx.compose.ui.unit.dp
-    import androidx.compose.ui.unit.sp
-    import kotlinx.coroutines.launch
-    // Đảm bảo bạn đã import R đúng package của dự án
-    // import com.example.appbandienthoai.R
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 
-    @Composable
-    fun RegisterScreen(api: ApiService, onLoginClick: () -> Unit) {
-        // --- GIỮ NGUYÊN LOGIC CŨ ---
-        var username by remember { mutableStateOf("") }
-        var phone by remember { mutableStateOf("") } // Logic cũ dùng Phone
-        var password by remember { mutableStateOf("") }
-        var isPasswordVisible by remember { mutableStateOf(false) }
-        var loading by remember { mutableStateOf(false) }
-        var error by remember { mutableStateOf("") }
+@Composable
+fun RegisterScreen(
+    api: ApiService,
+    onLoginClick: () -> Unit
+) {
+    var username by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var loading by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf("") }
 
-        val scope = rememberCoroutineScope()
-        // ---------------------------
+    val scope = rememberCoroutineScope()
 
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = Color.White
-        ) {
-<<<<<<< HEAD
-            Box(modifier = Modifier.fillMaxSize()) {
-                // Nút Back (Giao diện mới)
-                IconButton(
-                    onClick = { onLoginClick() }, // Dùng onLoginClick để quay lại như logic điều hướng
-                    modifier = Modifier
-                        .padding(top = 48.dp, start = 16.dp)
-                        .align(Alignment.TopStart)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.Black
-                    )
-=======
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.White
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
 
-            Spacer(modifier = Modifier.height(65.dp))
-
-            //logo
-            Box(
+            // 🔙 Back
+            IconButton(
+                onClick = onLoginClick,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp),
-                contentAlignment = Alignment.Center
+                    .padding(top = 48.dp, start = 16.dp)
+                    .align(Alignment.TopStart)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo_shop),
-                    contentDescription = null,
-                    modifier = Modifier.size(400.dp),
-                    contentScale = ContentScale.Fit
-                )
+                Icon(Icons.Default.ArrowBack, contentDescription = null)
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
-
-            Text(
-                text = "Tạo tài khoản mới",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-
-            Spacer(modifier = Modifier.height(30.dp))
-
-            // --- USERNAME ---
-            OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text("Tên người dùng") },
-                placeholder = { Text("Nhập tên đăng nhập") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-
-            OutlinedTextField(
-                value = phone,
-                onValueChange = { phone = it },
-                label = { Text("Số điện thoại") },
-                placeholder = { Text("Nhập số điện thoại") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                shape = RoundedCornerShape(12.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // --- PASSWORD ---
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Mật khẩu") },
-                placeholder = { Text("Nhập mật khẩu") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                shape = RoundedCornerShape(12.dp),
-                trailingIcon = {
-                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                        Icon(
-                            imageVector = if (isPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                            contentDescription = ""
-                        )
-                    }
->>>>>>> 6ca6197cc32c827e382e45e3814aadadb7bce635
-                }
-            }
-
-<<<<<<< HEAD
             Column(
-=======
-            Spacer(modifier = Modifier.height(32.dp))
-
-
-            Button(
-                onClick = {
-                    // Logic cũ được giữ nguyên
-                    scope.launch {
-                        if(username.isBlank() || phone.isBlank() || password.isBlank()){
-                            error = "Vui lòng nhập đầy đủ thông tin"
-                            return@launch
-                        }
-                        loading = true
-                        error = ""
-                        try {
-                            val request = RegisterRequest(username, phone, password)
-                            val response = api.register(request)
-                            if(response.success){
-                                error = ""
-                                onLoginClick()
-                            } else {
-                                error = response.message
-                            }
-                        } catch(e: Exception){
-                            error = "Không kết nối được server"
-                        } finally {
-                            loading = false
-                        }
-                    }
-                },
->>>>>>> 6ca6197cc32c827e382e45e3814aadadb7bce635
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-<<<<<<< HEAD
-                Spacer(modifier = Modifier.height(65.dp))
-=======
+                Spacer(Modifier.height(80.dp))
 
-            if(error.isNotEmpty()){
-                Spacer(Modifier.height(8.dp))
-                Text(error, color = Color.Red)
-            }
->>>>>>> 6ca6197cc32c827e382e45e3814aadadb7bce635
-
-                //logo
-                Box(
+                // Logo
+                Image(
+                    painter = painterResource(id = R.drawable.logo_shop),
+                    contentDescription = null,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.logo_shop),
-                        contentDescription = null,
-                        modifier = Modifier.size(400.dp),
-                        contentScale = ContentScale.Fit
-                    )
-                }
+                        .width(220.dp)
+                        .height(120.dp),
+                    contentScale = ContentScale.Fit
+                )
 
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(Modifier.height(32.dp))
 
-<<<<<<< HEAD
-=======
-
-            Row(
-                modifier = Modifier.padding(bottom = 32.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
->>>>>>> 6ca6197cc32c827e382e45e3814aadadb7bce635
                 Text(
                     text = "Tạo tài khoản mới",
                     fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    fontWeight = FontWeight.Bold
                 )
 
-                Spacer(modifier = Modifier.height(30.dp))
-
+                Spacer(Modifier.height(32.dp))
 
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it },
                     label = { Text("Tên người dùng") },
-                    placeholder = { Text("Nhập tên đăng nhập") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
+                Spacer(Modifier.height(16.dp))
 
                 OutlinedTextField(
                     value = phone,
                     onValueChange = { phone = it },
                     label = { Text("Số điện thoại") },
-                    placeholder = { Text("Nhập số điện thoại") },
-                    modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
+                Spacer(Modifier.height(16.dp))
 
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
                     label = { Text("Mật khẩu") },
-                    placeholder = { Text("Nhập mật khẩu") },
                     modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    shape = RoundedCornerShape(12.dp),
+                    visualTransformation =
+                        if (passwordVisible) VisualTransformation.None
+                        else PasswordVisualTransformation(),
                     trailingIcon = {
-                        IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
-                                imageVector = if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                                contentDescription = ""
+                                imageVector =
+                                    if (passwordVisible) Icons.Filled.Visibility
+                                    else Icons.Filled.VisibilityOff,
+                                contentDescription = null
                             )
                         }
-                    }
+                    },
+                    shape = RoundedCornerShape(12.dp)
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
-
+                Spacer(Modifier.height(24.dp))
 
                 Button(
                     onClick = {
-
                         scope.launch {
-                            if(username.isBlank() || phone.isBlank() || password.isBlank()){
+                            if (username.isBlank() || phone.isBlank() || password.isBlank()) {
                                 error = "Vui lòng nhập đầy đủ thông tin"
                                 return@launch
                             }
+
                             loading = true
                             error = ""
                             try {
-                                val request = RegisterRequest(username, phone, password)
-                                val response = api.register(request)
-                                if(response.success){
-                                    error = ""
+                                val response = api.register(
+                                    RegisterRequest(username, phone, password)
+                                )
+                                if (response.success) {
                                     onLoginClick()
                                 } else {
                                     error = response.message
                                 }
-                            } catch(e: Exception){
+                            } catch (e: Exception) {
                                 error = "Không kết nối được server"
                             } finally {
                                 loading = false
@@ -321,65 +164,32 @@
                     )
                 ) {
                     Text(
-                        text = if(loading) "Đang đăng ký..." else "Đăng Ký",
-                        fontSize = 16.sp,
+                        text = if (loading) "Đang đăng ký..." else "Đăng Ký",
                         fontWeight = FontWeight.Bold
                     )
                 }
 
-
-                if(error.isNotEmpty()){
+                if (error.isNotEmpty()) {
                     Spacer(Modifier.height(8.dp))
                     Text(error, color = Color.Red)
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(Modifier.weight(1f))
 
                 Row(
                     modifier = Modifier.padding(bottom = 32.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Text("Đã có tài khoản? ", color = Color.Gray)
                     Text(
-                        text = "Đã có tài khoản? ",
-                        color = Color.Gray,
-                        fontSize = 14.sp
-                    )
-                    Text(
-                        text = "Đăng Nhập",
-                        color = Color.Black,
+                        text = "Đăng nhập",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        modifier = Modifier.clickable {
-                            onLoginClick()
-                        }
+                        modifier = Modifier.clickable { onLoginClick() }
                     )
                 }
             }
         }
     }
+}
 
-    @Preview(showBackground = true)
-    @Composable
-    fun RegisterScreenPreview() {
-        // Mock API cho Preview
-        RegisterScreen(
-            api = object : ApiService {
-                override suspend fun login(request: LoginRequest) = throw NotImplementedError()
-                override suspend fun forgotPassword(request: ForgotPasswordRequest) = throw NotImplementedError()
-                override suspend fun register(request: RegisterRequest) =
-                    RegisterResponse(success = true, message = "Đăng ký thành công")
-                override suspend fun getAds(): List<Advertise> = emptyList()
-                override suspend fun getProduct(): List<Product> = emptyList()
-                override suspend fun filterProducts(
-                    min: Int?,
-                    max: Int?,
-                    hang: String?
-                ): FilterResponse {
-                    TODO("Not yet implemented")
-                }
 
-                override suspend fun getProductDetail(id: Int): List<ProductDetail> = emptyList()
-            },
-            onLoginClick = {}
-        )
-    }

@@ -3,19 +3,8 @@ package com.example.appbandienthoai
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,29 +12,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,33 +24,30 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.Navigation
 import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(modifier: Modifier = Modifier, navController: NavHostController) {
+fun MainScreen(navController: NavHostController) {
+
     var productList by remember { mutableStateOf<List<Product>>(emptyList()) }
     var adsList by remember { mutableStateOf<List<Advertise>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
-    val brands = productList
-        .map { it.Hang }
-        .distinct()
+    var selectedItemIndex by remember { mutableIntStateOf(0) }
+
+    val brands = productList.map { it.Hang }.distinct()
+
     LaunchedEffect(Unit) {
         try {
-            val adsResult = RetrofitClient.api.getAds()
-            adsList = adsResult
-            
-            val productResult = RetrofitClient.api.getProduct()
-            productList = productResult
-            
-            isLoading = false
+            adsList = RetrofitClient.api.getAds()
+            productList = RetrofitClient.api.getProduct()
         } catch (e: Exception) {
-            Log.e("API_ERROR", "Lỗi: ${e.message}")
+            Log.e("API_ERROR", e.message ?: "")
+        } finally {
             isLoading = false
         }
     }
-    var selectedItemIndex by remember { mutableIntStateOf(0) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -92,13 +57,14 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavHostController) 
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Mobile Store", fontWeight = FontWeight.Bold)
+                        Text("Mobile Store", fontWeight = FontWeight.Bold)
                         IconButton(onClick = {}) {
-                            Icon(Icons.Default.Favorite, contentDescription = "Yêu thích")
+                            Icon(Icons.Default.Favorite, contentDescription = null)
                         }
                     }
                 }
             )
+
         },
         bottomBar = {
             NavigationBar (
@@ -108,7 +74,14 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavHostController) 
                     NavigationBarItem(
                         selected = selectedItemIndex== index,
                         onClick = {
-                            selectedItemIndex=index
+                            selectedItemIndex = index
+                            navController.navigate(item.route) {
+                                popUpTo("home") {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         },
                         label = {
                             Text(text=item.title)
@@ -129,6 +102,7 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavHostController) 
             }
         }
     ) { padding ->
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -136,99 +110,77 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavHostController) 
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
 
+            // 🔍 Search + Filter
             item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                        .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextField(
                         modifier = Modifier.weight(1f),
                         value = "",
                         onValueChange = {},
-                        placeholder = { Text(text = "Tìm kiếm sản phẩm") },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        placeholder = { Text("Tìm kiếm sản phẩm") },
+                        leadingIcon = { Icon(Icons.Default.Search, null) },
                         shape = CircleShape,
                         colors = TextFieldDefaults.colors(
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent
                         )
                     )
-                    IconButton(
-                        onClick = {
-                            val brandString = brands.joinToString(",")
-                            navController.navigate("filter/$brandString")
-                        }
-                    ) {
-                        Icon(Icons.Default.FilterAlt, contentDescription = "Loc")
-                    }
 
+                    IconButton(onClick = {
+                        navController.navigate("filter/${brands.joinToString(",")}")
+                    }) {
+                        Icon(Icons.Default.FilterAlt, contentDescription = null)
+                    }
                 }
             }
 
-<<<<<<< HEAD
-
+            // 📢 Banner quảng cáo
             item {
-                Spacer(modifier = Modifier.height(16.dp))
-=======
-            // 2. Banner Quảng cáo
-            item  {
->>>>>>> 6ca6197cc32c827e382e45e3814aadadb7bce635
                 if (adsList.isNotEmpty()) {
-                    // Khởi tạo trạng thái Pager
-                    val pagerState = androidx.compose.foundation.pager.rememberPagerState(pageCount = { adsList.size })
+                    val pagerState =
+                        androidx.compose.foundation.pager.rememberPagerState { adsList.size }
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        // Pager cho phép vuốt banner
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
                         androidx.compose.foundation.pager.HorizontalPager(
                             state = pagerState,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(180.dp), // Điều chỉnh chiều cao cho phù hợp hình ảnh
+                                .height(180.dp),
                             contentPadding = PaddingValues(horizontal = 16.dp),
                             pageSpacing = 12.dp
                         ) { page ->
-                            val ad = adsList[page]
                             Card(
                                 shape = RoundedCornerShape(16.dp),
-                                modifier = Modifier.fillMaxSize(),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                                elevation = CardDefaults.cardElevation(4.dp)
                             ) {
                                 AsyncImage(
-                                    model = ad.HinhAnh,
+                                    model = adsList[page].HinhAnh,
                                     contentDescription = null,
                                     modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.FillBounds // Hiển thị đầy đủ theo khung hình
+                                    contentScale = ContentScale.FillBounds
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(Modifier.height(8.dp))
 
-                        // Các dấu chấm (Dots Indicator)
-                        Row(
-                            Modifier
-                                .height(8.dp)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            repeat(adsList.size) { iteration ->
-                                val color = if (pagerState.currentPage == iteration) Color.Red else Color.LightGray
-                                val width = if (pagerState.currentPage == iteration) 12.dp else 8.dp
-
+                        Row(horizontalArrangement = Arrangement.Center) {
+                            repeat(adsList.size) {
                                 Box(
                                     modifier = Modifier
                                         .padding(2.dp)
+                                        .size(if (pagerState.currentPage == it) 10.dp else 8.dp)
                                         .clip(CircleShape)
-                                        .background(color)
-                                        .width(width)
-                                        .height(8.dp)
+                                        .background(
+                                            if (pagerState.currentPage == it)
+                                                Color.Red else Color.LightGray
+                                        )
                                 )
                             }
                         }
@@ -236,90 +188,59 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavHostController) 
                 }
             }
 
-
-
-
-            val chunks = productList.chunked(2)
-            items(chunks) { rowItems ->
+            // 📦 Danh sách sản phẩm (2 cột)
+            val rows = productList.chunked(2)
+            items(rows) { row ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    for (product in rowItems) {
-                        ProductItem(
-                            product = product,
-                            modifier = Modifier.weight(1f)
-                        )
+                    row.forEach {
+                        ProductItem(it, Modifier.weight(1f))
                     }
-
-                    if (rowItems.size == 1) {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
+                    if (row.size == 1) Spacer(Modifier.weight(1f))
                 }
             }
-            
-            if (isLoading && productList.isEmpty()) {
+
+
+            if (isLoading) {
                 item {
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
                         CircularProgressIndicator()
                     }
                 }
             }
-
         }
     }
-
-
 }
 
 @Composable
 fun ProductItem(product: Product, modifier: Modifier = Modifier) {
     Card(
-        modifier = modifier
-            .clickable { /* Điều hướng chi tiết */ },
+        modifier = modifier.clickable { },
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column {
-            Box(
+            AsyncImage(
+                model = product.DuongLinkAnh,
+                contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp)
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center
-            ) {
+                    .height(150.dp),
+                contentScale = ContentScale.Fit
+            )
 
-                AsyncImage(
-                    model = product.DuongLinkAnh,
-                    contentDescription = product.TenSanPham,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
-                )
-            }
+            Column(Modifier.padding(8.dp)) {
+                Text(product.TenSanPham, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.Bold)
+                Text(product.Hang, fontSize = 12.sp, color = Color.Gray)
+                Text("Giá ${product.Gia}", color = Color(0xFF6A1B9A), fontWeight = FontWeight.Bold)
 
-            Column(modifier = Modifier.padding(8.dp)) {
-                Text(
-                    text = product.TenSanPham,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = product.Hang,
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Giá ${product.Gia}",
-                    color = Color(0xFF6A1B9A),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
-                )
             }
         }
     }
