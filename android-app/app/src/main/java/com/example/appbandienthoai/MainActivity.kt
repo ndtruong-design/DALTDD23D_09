@@ -15,14 +15,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             AppBanDienThoaiTheme {
-<<<<<<< HEAD
                 AppNavigation()
-
-=======
-               // AppNavigation()
-                MainScreen()
->>>>>>> 6ca6197cc32c827e382e45e3814aadadb7bce635
-
             }
         }
     }
@@ -34,7 +27,7 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = "main"
+        startDestination = "login"
     ) {
         composable("login") {
             LoginScreen(
@@ -63,6 +56,11 @@ fun AppNavigation() {
 
         }
 
+        //composable("home") { HomeScreen() }
+        //composable("cart") { CartScreen() }
+        //composable("don_hang") { OrderScreen() }
+       // composable("profile") { ProfileScreen() }
+
         composable("forgot") {
             ForgotPasswordScreen(
                 api = RetrofitClient.api,
@@ -81,6 +79,10 @@ fun AppNavigation() {
                 navController = navController,
                 brands = brands
             )
+        }
+        composable(route="payment")
+        {
+            PaymentScreen(onPlaceOrder = {navController.popBackStack()})
         }
 
     }
