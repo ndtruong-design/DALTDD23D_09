@@ -10,8 +10,13 @@ CREATE TABLE SanPham (
     Hang VARCHAR(100),
     TrangThai INT DEFAULT 1 -- 1: Hoạt động, 0: Ngừng bán
 );
-
--- 2. Bảng Hình ảnh
+-- 2. Bảng Màu sắc
+CREATE TABLE MauSac (
+    MaMau INT AUTO_INCREMENT PRIMARY KEY,
+    TenMau VARCHAR(50) NOT NULL,
+    TrangThai INT DEFAULT 1
+);
+-- 3. Bảng Hình ảnh
 CREATE TABLE HinhAnh (
     MaAnh INT AUTO_INCREMENT PRIMARY KEY,
     MaSanPham INT NOT NULL,
@@ -22,12 +27,7 @@ CREATE TABLE HinhAnh (
     FOREIGN KEY (MaMau) REFERENCES MauSac(MaMau) -- Thêm dòng này nếu đã có bảng MauSac
 );
 
--- 3. Bảng Màu sắc
-CREATE TABLE MauSac (
-    MaMau INT AUTO_INCREMENT PRIMARY KEY,
-    TenMau VARCHAR(50) NOT NULL,
-    TrangThai INT DEFAULT 1
-);
+
 
 -- 4. Bảng Chi tiết sản phẩm
 CREATE TABLE ChiTietSanPham (
@@ -151,8 +151,14 @@ INSERT INTO SanPham (TenSanPham, MoTa, Hang, TrangThai) VALUES
 ('iPhone 15 Pro Max', 'Thiết kế khung titan chuẩn hàng không vũ trụ, bền bỉ và nhẹ.', 'Apple', 1),
 ('Samsung Galaxy S24 Ultra', 'Quyền năng Galaxy AI, Zoom mắt thần bóng đêm.', 'Samsung', 1),
 ('Xiaomi Redmi Note 13 Pro', 'Siêu phẩm tầm trung, camera 200MP.', 'Xiaomi', 1);
-
--- 2.1. Thêm dữ liệu bảng Hình ảnh
+-- 2. Thêm dữ liệu bảng Màu sắc
+INSERT INTO MauSac (TenMau) VALUES 
+('Titan Tự Nhiên'), 
+('Đen Phantom'), 
+('Đen huyền Bí'), 
+('Vàng Hoàng Kim'),
+('Xanh xa lánh');
+-- 3. Thêm dữ liệu bảng Hình ảnh
 INSERT INTO HinhAnh (MaSanPham, MaMau, DuongLinkAnh, LaAnhDaiDien) VALUES 
 (1, 1, 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-15-pro-max_2__5_2_1_1.jpg', TRUE),  -- Ảnh đại diện iPhone
 (1, 1, 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-15-pro-max_4__1.jpg', FALSE), -- Ảnh chi tiết iPhone
@@ -169,13 +175,7 @@ INSERT INTO HinhAnh (MaSanPham, MaMau, DuongLinkAnh, LaAnhDaiDien) VALUES
 (3,5, 'https://cdn2.cellphones.com.vn/358x/media/catalog/product/2/0/20241135_3.png', TRUE),    -- Ảnh đại diện Xiaomi màu khác
 (3,5, 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/p/h/photo_2024-12-23_10-19-43_-_copy.jpg', FALSE),
 (3,5, 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/p/h/photo_2024-12-23_10-19-33_-_copy.jpg', FALSE); -- Ảnh chi tiết Xiaomi màu khác
--- 3. Thêm dữ liệu bảng Màu sắc
-INSERT INTO MauSac (TenMau) VALUES 
-('Titan Tự Nhiên'), 
-('Đen Phantom'), 
-('Đen huyền Bí'), 
-('Vàng Hoàng Kim'),
-('Xanh xa lánh');
+
 
 -- 4. Thêm dữ liệu Chi tiết sản phẩm (Kho và Giá)
 -- iPhone 15 Pro Max (ID=1) màu Titan (ID=1)

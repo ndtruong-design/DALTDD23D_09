@@ -86,7 +86,12 @@ data class cartResponse<T>(
     val message: String? = null
 )
 
+data class OrderHistoryResponse(
+    val success: Boolean,
+    val data: List<Order>
+)
 
+<<<<<<< HEAD
 data class CartItem(
     val MaSanPham: Int,
     val TenSanPham: String,
@@ -121,6 +126,27 @@ data class RemoveCartRequest(
 data class CheckoutRequest(
     val MaKhachHang: Int
 )
+=======
+data class Order(
+    @SerializedName("order_id") val MaDonHang: Int,
+    @SerializedName("date_ordered") val NgayDatHang: String,
+    @SerializedName("total_price_formatted") val TongTienHienThi: String,
+    @SerializedName("status_text") val TrangThaiText: String,
+    @SerializedName("status_code") val TrangThaiCode: Int,
+    @SerializedName("payment_status_text") val TrangThaiThanhToan: String,
+    @SerializedName("items") val ChiTiet: List<OrderItem>
+)
+
+data class OrderItem(
+    @SerializedName("product_name") val TenSanPham: String,
+    @SerializedName("variant_info") val ThongTinPhienBan: String,
+    @SerializedName("color") val MauSac: String,
+    @SerializedName("quantity") val SoLuong: Int,
+    @SerializedName("price_formatted") val GiaHienThi: String,
+    @SerializedName("image") val HinhAnh: String
+)
+
+>>>>>>> 39ac91798287cfd6852db976bb681d41760efec8
 
 interface ApiService {
     @POST("login.php")
@@ -154,6 +180,7 @@ interface ApiService {
     ): cartResponse<List<CartItem>>
 
 
+<<<<<<< HEAD
     @POST("cart/add.php")
     suspend fun addToCart(
         @Body body: AddCartRequest
@@ -176,4 +203,8 @@ interface ApiService {
     suspend fun checkout(
         @Body body: CheckoutRequest
     ): cartResponse<Unit>
+=======
+    @GET("get_order_history.php")
+    suspend fun getOrderHistory(@Query("user_id") userId: Int): OrderHistoryResponse
+>>>>>>> 39ac91798287cfd6852db976bb681d41760efec8
 }
