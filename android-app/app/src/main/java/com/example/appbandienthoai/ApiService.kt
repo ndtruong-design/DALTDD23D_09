@@ -80,15 +80,47 @@ data class FilterResponse(
     val success: Boolean,
     val data: List<Product>
 )
+data class cartResponse<T>(
+    val success: Boolean,
+    val data: T? = null,
+    val message: String? = null
+)
 
 
+data class CartItem(
+    val MaSanPham: Int,
+    val TenSanPham: String,
+    val Gia: Int,
+    val SoLuong: Int = 1,
+    val HinhAnh: String,
+    val TenMau: String,
+    val BoNho: String
+)
 
+data class AddCartRequest(
+    val MaKhachHang: Int,
+    val MaSanPham: Int,
+    val TenSanPham: String,
+    val Gia: Int,
+    val DuongLinkAnh: String,
+    val TenMau: String,
+    val BoNho: String
+)
 
+data class UpdateQuantityRequest(
+    val MaKhachHang: Int,
+    val MaSanPham: Int,
+    val SoLuong: Int
+)
 
+data class RemoveCartRequest(
+    val MaKhachHang: Int,
+    val MaSanPham: Int
+)
 
-
-
-
+data class CheckoutRequest(
+    val MaKhachHang: Int
+)
 
 interface ApiService {
     @POST("login.php")
@@ -116,5 +148,32 @@ interface ApiService {
 
     @GET("get_product_detail.php")
     suspend fun getProductDetail(@Query("MaSanPham") id: Int):List<ProductDetail>
+    @GET("cart/get.php")
+    suspend fun getCart(
+        @Query("user_id") userId: Int
+    ): cartResponse<List<CartItem>>
 
+
+    @POST("cart/add.php")
+    suspend fun addToCart(
+        @Body body: AddCartRequest
+    ): cartResponse<Unit>
+
+
+    @POST("cart/update.php")
+    suspend fun updateQuantity(
+        @Body body: UpdateQuantityRequest
+    ): cartResponse<Unit>
+
+
+    @POST("cart/remove.php")
+    suspend fun removeItem(
+        @Body body: RemoveCartRequest
+    ): cartResponse<Unit>
+
+
+    @POST("cart/checkout.php")
+    suspend fun checkout(
+        @Body body: CheckoutRequest
+    ): cartResponse<Unit>
 }

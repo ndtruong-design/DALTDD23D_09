@@ -14,20 +14,18 @@ SELECT
     ct.MaMau,
     ct.BoNho,
     ct.Gia,
-    (
-        SELECT ha.DuongLinkAnh
-        FROM hinhanh ha
-        WHERE ha.MaSanPham = sp.MaSanPham
-        LIMIT 1
-    ) AS DuongLinkAnh
+    ha.DuongLinkAnh
 FROM chitietsanpham ct
-JOIN sanpham sp ON sp.MaSanPham = ct.MaSanPham
+JOIN sanpham sp 
+    ON sp.MaSanPham = ct.MaSanPham
+LEFT JOIN hinhanh ha 
+    ON ha.MaSanPham = sp.MaSanPham
+    AND ha.LaAnhDaiDien = 1
 WHERE 1=1
 ";
 
-
-
 $params = [];
+
 if ($min > 0) {
     $sql .= " AND ct.Gia >= :min";
     $params[':min'] = $min;
@@ -37,23 +35,18 @@ if ($max > 0) {
     $params[':max'] = $max;
 }
 if (!empty($hang)) {
-    $sql .= " AND LOWER(TRIM(sp.Hang)) LIKE LOWER(:hang)";
-    $params[':hang'] = "%$hang%";
+    $sql .= " AND sp.Hang = :hang";
+    $params[':hang'] = $hang;
 }
 
 $sql .= "
-GROUP BY ct.MaSanPham, ct.MaMau, ct.BoNho,ct.MaMau
-ORDER BY sp.MaSanPham
+ORDER BY sp.MaSanPham, ct.MaMau, ct.BoNho
 ";
-
-
 
 $stmt = $conn->prepare($sql);
 $stmt->execute($params);
-$data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 echo json_encode([
     "success" => true,
-    "data" => $data
+    "data" => $stmt->fetchAll(PDO::FETCH_ASSOC)
 ]);
-

@@ -32,13 +32,15 @@ fun AppNavigation(cartViewModel: CartViewModel) {
         navController = navController,
         startDestination = "login"
     ) {
+        composable("splash") { SplashScreen(navController) }
+
         composable("login") {
             LoginScreen(
                 api = RetrofitClient.api,
                 onRegisterClick = { navController.navigate("register") },
                 onForgotPasswordClick = { navController.navigate("forgot") },
                 onLoginSuccess = {
-                    navController.navigate("main") {
+                    navController.navigate("home") {
                         popUpTo("login") { inclusive = true }
                     }
                 }
@@ -54,7 +56,7 @@ fun AppNavigation(cartViewModel: CartViewModel) {
             )
         }
 
-        composable("main") {
+        composable("home") {
             MainScreen(navController = navController)
 
         }
@@ -65,7 +67,8 @@ fun AppNavigation(cartViewModel: CartViewModel) {
                 cartViewModel = cartViewModel,
                 onCheckout = {
                     navController.navigate("payment")
-                }
+                },
+                navController = navController
             )
         }
         //composable("don_hang") { OrderScreen() }
