@@ -162,15 +162,13 @@ fun FilterScreen(
             } else {
                 LazyColumn {
                     items(products) { product ->
-                        ProductItem(
-                            product = product,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
+                        ProductItem(product, Modifier.weight(1f),
+                            onClick={
+                                navController.navigate("detail/${product.MaSanPham}/${product.BoNho}")
+                            })
                     }
                 }
             }
         }
     }
 }
-
-

@@ -11,11 +11,12 @@ try {
     $sql = "SELECT
     sp.*,
     ct.Gia,
+    ct.BoNho,
     ha.DuongLinkAnh
 FROM sanpham sp
 LEFT JOIN chitietsanpham ct ON sp.MaSanPham = ct.MaSanPham
-LEFT JOIN hinhanh ha ON sp.MaSanPham = ha.MaSanPham AND ha.LaAnhDaiDien = 1 
-WHERE sp.TrangThai = 1";
+LEFT JOIN hinhanh ha ON ct.MaChiTietSP = ha.MaChiTietSP AND ha.LaAnhDaiDien = 1 
+WHERE sp.TrangThai = 1";        
 
  
             

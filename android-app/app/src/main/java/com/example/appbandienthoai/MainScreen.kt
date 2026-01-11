@@ -1,5 +1,6 @@
 package com.example.appbandienthoai
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -198,7 +199,10 @@ fun MainScreen(navController: NavHostController) {
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     row.forEach {
-                        ProductItem(it, Modifier.weight(1f))
+                        ProductItem(it, Modifier.weight(1f),
+                            onClick={
+                                navController.navigate("detail/${it.MaSanPham}/${it.BoNho}")
+                            })
                     }
                     if (row.size == 1) Spacer(Modifier.weight(1f))
                 }
@@ -220,9 +224,9 @@ fun MainScreen(navController: NavHostController) {
 }
 
 @Composable
-fun ProductItem(product: Product, modifier: Modifier = Modifier) {
+fun ProductItem(product: Product, modifier: Modifier = Modifier,onClick:()-> Unit) {
     Card(
-        modifier = modifier.clickable { },
+        modifier = modifier.clickable {onClick()},
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
@@ -237,7 +241,10 @@ fun ProductItem(product: Product, modifier: Modifier = Modifier) {
             )
 
             Column(Modifier.padding(8.dp)) {
-                Text(product.TenSanPham, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "${product.TenSanPham} ${product.BoNho}",
+                    fontWeight = FontWeight.Bold
+                )
                 Text(product.Hang, fontSize = 12.sp, color = Color.Gray)
                 Text("Giá ${product.Gia}", color = Color(0xFF6A1B9A), fontWeight = FontWeight.Bold)
 

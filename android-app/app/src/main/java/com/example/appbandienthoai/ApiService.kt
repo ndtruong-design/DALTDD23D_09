@@ -66,10 +66,19 @@ data class ProductDetail(
     val HeDieuHanh: String,
     val CPU: String,
     val GPU: String,
-    val RAM: String
+    val RAM: String,
+    val TenSanPham: String  ,
+    val Hang: String,
+    val MoTa: String
 )
 
-
+data class ImageDetail(
+    val MaAnh: Int,
+    val MaChiTietSP: Int,
+    val MaMau: Int,
+    val DuongLinkAnh: String,
+    val laAnhDaiDien: Int
+)
 
 data class Advertise(
 
@@ -81,6 +90,11 @@ data class FilterResponse(
     val data: List<Product>
 )
 
+data class ColorPhone(
+    val MaMau: Int,
+    val TenMau: String,
+    val MaHex: String?
+)
 data class OrderHistoryResponse(
     val success: Boolean,
     val data: List<Order>
@@ -122,7 +136,6 @@ interface ApiService {
     @GET("get_products.php")
     suspend fun getProduct(): List<Product>
 
-
     @GET("filter.php")
     suspend fun filterProducts(
         @Query("min") min: Int?,
@@ -131,7 +144,23 @@ interface ApiService {
     ): FilterResponse
 
     @GET("get_product_detail.php")
-    suspend fun getProductDetail(@Query("MaSanPham") id: Int):List<ProductDetail>
+    suspend fun getProductDetail(
+        @Query("MaSanPham") maSanPham: Int,
+        @Query("BoNho") boNho: String,
+        @Query("MaMau") maMau: String? = null
+    ): ProductDetail
+
+    @GET("get_image_detail.php")
+    suspend fun getImageDetail(
+        @Query("MaSanPham") maSanPham: Int,
+        @Query("MaMau") maMau: String
+    ): List<ImageDetail>
+
+    @GET("get_color.php")
+    suspend fun getColor(
+        @Query("MaSanPham") MaSanPham: Int,
+        @Query("BoNho")BoNho: String
+    ): List<ColorPhone>
 
 
     @GET("get_order_history.php")
