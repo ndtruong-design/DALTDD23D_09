@@ -1,5 +1,4 @@
 package com.example.appbandienthoai
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,7 +9,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
 import com.example.appbandienthoai.ui.theme.AppBanDienThoaiTheme
-import kotlin.getValue
 
 class MainActivity : ComponentActivity() {
     val cartViewModel: CartViewModel by viewModels()
@@ -30,7 +28,7 @@ fun AppNavigation(cartViewModel: CartViewModel) {
 
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = "login" // ĐỔI TỪ "login" THÀNH "profile"
     ) {
         composable("splash") { SplashScreen(navController) }
 
@@ -58,9 +56,7 @@ fun AppNavigation(cartViewModel: CartViewModel) {
 
         composable("home") {
             MainScreen(navController = navController)
-
         }
-
 
         composable("cart") {
             CartScreen(
@@ -71,8 +67,6 @@ fun AppNavigation(cartViewModel: CartViewModel) {
                 navController = navController
             )
         }
-        //composable("don_hang") { OrderScreen() }
-       // composable("profile") { ProfileScreen() }
 
         composable("forgot") {
             ForgotPasswordScreen(
@@ -93,10 +87,18 @@ fun AppNavigation(cartViewModel: CartViewModel) {
                 brands = brands
             )
         }
-        composable(route="payment")
-        {
+
+        composable(route="payment") {
             PaymentScreen(onPlaceOrder = {navController.popBackStack()})
         }
 
+        // THÊM ROUTE PROFILE
+        composable("profile") {
+            ProfileScreen(
+                userId = 1, // Thay số 1 bằng ID thật từ login
+                api = RetrofitClient.api,
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }

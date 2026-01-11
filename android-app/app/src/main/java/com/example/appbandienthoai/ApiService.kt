@@ -48,7 +48,7 @@ data class Product(
     val TrangThai: Int,
     val Gia: Int,
     val DuongLinkAnh: String,
-    val BoNho:String
+    val BoNho: String
 )
 
 data class ProductDetail(
@@ -78,19 +78,19 @@ data class FilterResponse(
     val success: Boolean,
     val data: List<Product>
 )
+
 data class cartResponse<T>(
     val success: Boolean,
     val data: T? = null,
     val message: String? = null
 )
 
-<<<<<<< HEAD
 data class Order(
     val MaDonHang: Int,
     val NgayDatHang: String,
     val TongTien: Double,
     val TrangThai: Int,
-    val TrangThaiText:String,
+    val TrangThaiText: String,
     val HoTen: String,
     val SoDienThoai: String
 )
@@ -98,7 +98,7 @@ data class Order(
 data class AdminOrdersResponse(
     val success: Boolean,
     val orders: List<Order>,
-    val total :Int,
+    val total: Int,
 )
 
 data class OrderDetailData(
@@ -140,13 +140,25 @@ data class UpdateStatusResponse(
     val success: Boolean,
     val message: String
 )
-=======
-data class OrderHistoryResponse(
-    val success: Boolean,
-    val data: List<Order>
+
+data class UserProfile(
+    val MaKhachHang: Int,
+    val TenDangNhap: String,
+    val HoTen: String,
+    val SoDienThoai: String,
+    val Email: String? = null,
+    val NgaySinh: String? = null,
+    val DiaChi: String? = null,
+    val AnhDaiDien: String? = null,
+    val TrangThai: Int = 1
 )
 
-<<<<<<< HEAD
+data class ProfileResponse(
+    val success: Boolean,
+    val user: UserProfile? = null,
+    val message: String? = null
+)
+
 data class CartItem(
     val MaSanPham: Int,
     val TenSanPham: String,
@@ -181,28 +193,22 @@ data class RemoveCartRequest(
 data class CheckoutRequest(
     val MaKhachHang: Int
 )
-=======
-data class Order(
-    @SerializedName("order_id") val MaDonHang: Int,
-    @SerializedName("date_ordered") val NgayDatHang: String,
-    @SerializedName("total_price_formatted") val TongTienHienThi: String,
-    @SerializedName("status_text") val TrangThaiText: String,
-    @SerializedName("status_code") val TrangThaiCode: Int,
-    @SerializedName("payment_status_text") val TrangThaiThanhToan: String,
-    @SerializedName("items") val ChiTiet: List<OrderItem>
+data class UpdateProfileRequest(
+    val MaKhachHang:  Int,
+    val HoTen: String?  = null,
+    val Email:  String? = null,
+    val SoDienThoai: String? = null,
+    val NgaySinh: String?  = null,
+    val DiaChi: String? = null,
+    val AnhDaiDien: String? = null
 )
 
-data class OrderItem(
-    @SerializedName("product_name") val TenSanPham: String,
-    @SerializedName("variant_info") val ThongTinPhienBan: String,
-    @SerializedName("color") val MauSac: String,
-    @SerializedName("quantity") val SoLuong: Int,
-    @SerializedName("price_formatted") val GiaHienThi: String,
-    @SerializedName("image") val HinhAnh: String
+data class UpdateProfileResponse(
+    val success: Boolean,
+    val message: String,
+    val user: UserProfile? = null
 )
 
->>>>>>> 39ac91798287cfd6852db976bb681d41760efec8
->>>>>>> 164c46c961cd3e5539cd80ad6f5720cd2b911c5e
 
 interface ApiService {
     @POST("login.php")
@@ -228,7 +234,6 @@ interface ApiService {
     ): FilterResponse
 
     @GET("get_product_detail.php")
-<<<<<<< HEAD
     suspend fun getProductDetail(@Query("MaSanPham") id: Int): List<ProductDetail>
 
     @GET("admin/orders/get_orders.php")
@@ -245,41 +250,37 @@ interface ApiService {
     suspend fun updateOrderStatus(
         @Body request: UpdateStatusRequest
     ): UpdateStatusResponse
-}
-=======
-    suspend fun getProductDetail(@Query("MaSanPham") id: Int):List<ProductDetail>
+
+    @GET("get_profile.php")
+    suspend fun getProfile(
+        @Query("MaKhachHang") userId: Int
+    ): ProfileResponse
+    @POST("update_profile.php")
+    suspend fun updateProfile(
+        @Body request: UpdateProfileRequest
+    ): UpdateProfileResponse
     @GET("cart/get.php")
     suspend fun getCart(
         @Query("user_id") userId: Int
     ): cartResponse<List<CartItem>>
 
-
-<<<<<<< HEAD
     @POST("cart/add.php")
     suspend fun addToCart(
         @Body body: AddCartRequest
     ): cartResponse<Unit>
-
 
     @POST("cart/update.php")
     suspend fun updateQuantity(
         @Body body: UpdateQuantityRequest
     ): cartResponse<Unit>
 
-
     @POST("cart/remove.php")
     suspend fun removeItem(
         @Body body: RemoveCartRequest
     ): cartResponse<Unit>
 
-
     @POST("cart/checkout.php")
     suspend fun checkout(
         @Body body: CheckoutRequest
     ): cartResponse<Unit>
-=======
-    @GET("get_order_history.php")
-    suspend fun getOrderHistory(@Query("user_id") userId: Int): OrderHistoryResponse
->>>>>>> 39ac91798287cfd6852db976bb681d41760efec8
 }
->>>>>>> 164c46c961cd3e5539cd80ad6f5720cd2b911c5e
