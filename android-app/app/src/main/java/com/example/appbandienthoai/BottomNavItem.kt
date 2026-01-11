@@ -17,5 +17,6 @@ val bottomNavItems=listOf(
     BottomNavItem("Trang chủ", Icons.Default.Home,"home"),
     BottomNavItem("Giỏ hàng", Icons.Default.ShoppingCart,"cart"),
     BottomNavItem("Đơn hàng", Icons.Default.DeliveryDining,"don_hang"),
+    BottomNavItem("Lịch sử", Icons.Default.History,"lich_su"),
     BottomNavItem("Tài khoản", Icons.Default.Person,"profile")
 )

@@ -132,7 +132,7 @@ fun FilterScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(contentColor = Color.White , containerColor = Color(0xFF6A1B9A)),
                 onClick = {
                     scope.launch {
                         isLoading = true

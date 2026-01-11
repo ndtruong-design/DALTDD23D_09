@@ -24,6 +24,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
@@ -39,10 +40,15 @@ fun LoginScreen(
     var rememberMe by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
-
+    var token by remember { mutableStateOf("") }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-
+    LaunchedEffect(Unit) {
+        val savedUsername = getUsername(context)
+        if (!savedUsername.isNullOrEmpty()) {
+            username = savedUsername
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -138,8 +144,15 @@ fun LoginScreen(
                         val response = api.login(LoginRequest(username, password))
                         if (response.success) {
                             response.token?.let {
-                                saveToken(context, it)
+                                if (rememberMe) {
+                                    saveUsername(context.applicationContext, username)
+                                    savePassword(context.applicationContext, password)
+                                }
+
+                                saveToken(context.applicationContext, token)
+                                saveRememberMe(context.applicationContext, rememberMe)
                                 onLoginSuccess()
+
                             }
                         } else {
                             errorMessage = response.message ?: "Sai tài khoản hoặc mật khẩu"
@@ -270,3 +283,25 @@ fun SocialMediaButton(iconRes: Int, onClick: () -> Unit) {
         )
     }
 }
+@Composable
+fun SplashScreen(navController: NavController) {
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        val remember = getRememberMe(context.applicationContext)
+        val token = getToken(context.applicationContext)
+
+        if (remember && !token.isNullOrEmpty()) {
+            navController.navigate("home") {
+                popUpTo("splash") { inclusive = true }
+            }
+        } else {
+            navController.navigate("login") {
+                popUpTo("splash") { inclusive = true }
+            }
+        }
+    }
+}
+
+
+

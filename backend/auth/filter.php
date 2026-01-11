@@ -6,20 +6,23 @@ $min  = isset($_GET['min']) ? intval($_GET['min']) : 0;
 $max  = isset($_GET['max']) ? intval($_GET['max']) : 0;
 $hang = $_GET['hang'] ?? '';
 
-
 $sql = "
 SELECT
     sp.MaSanPham,
     sp.TenSanPham,
-    MIN(ct.Gia) AS Gia,
     sp.Hang,
+    ct.MaMau,
+    ct.BoNho,
+    ct.Gia,
     ha.DuongLinkAnh
-FROM sanpham sp
-LEFT JOIN chitietsanpham ct ON sp.MaSanPham = ct.MaSanPham
-LEFT JOIN hinhanh ha ON sp.MaSanPham = ha.MaSanPham
+FROM chitietsanpham ct
+JOIN sanpham sp 
+    ON sp.MaSanPham = ct.MaSanPham
+LEFT JOIN hinhanh ha 
+    ON ha.MaSanPham = sp.MaSanPham
+    AND ha.LaAnhDaiDien = 1
 WHERE 1=1
 ";
-
 
 $params = [];
 
@@ -27,25 +30,23 @@ if ($min > 0) {
     $sql .= " AND ct.Gia >= :min";
     $params[':min'] = $min;
 }
-
 if ($max > 0) {
     $sql .= " AND ct.Gia <= :max";
     $params[':max'] = $max;
 }
-
 if (!empty($hang)) {
     $sql .= " AND sp.Hang = :hang";
     $params[':hang'] = $hang;
 }
+
 $sql .= "
-GROUP BY sp.MaSanPham, sp.TenSanPham, sp.Hang, ha.DuongLinkAnh
+ORDER BY sp.MaSanPham, ct.MaMau, ct.BoNho
 ";
+
 $stmt = $conn->prepare($sql);
 $stmt->execute($params);
-$data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 echo json_encode([
     "success" => true,
-    "data" => $data
+    "data" => $stmt->fetchAll(PDO::FETCH_ASSOC)
 ]);
-?>
