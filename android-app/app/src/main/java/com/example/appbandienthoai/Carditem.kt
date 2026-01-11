@@ -5,16 +5,6 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-// Model item trong giỏ
-data class CartItem(
-    val MaSanPham: Int,
-    val TenSanPham: String,
-    val Gia: Int,
-    val SoLuong: Int = 1,
-    val HinhAnh: String,
-    val TenMau: String,
-    val BoNho: String
-)
 
 class CartViewModel : ViewModel() {
 

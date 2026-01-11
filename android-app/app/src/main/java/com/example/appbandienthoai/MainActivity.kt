@@ -11,7 +11,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 
 import com.example.appbandienthoai.ui.theme.AppBanDienThoaiTheme
-import kotlin.getValue
 
 class MainActivity : ComponentActivity() {
     val cartViewModel: CartViewModel by viewModels()
@@ -31,8 +30,13 @@ fun AppNavigation(cartViewModel: CartViewModel) {
 
     NavHost(
         navController = navController,
-        startDestination = "home"
+
+
+        startDestination = "login" // ĐỔI TỪ "login" THÀNH "profile"
+
     ) {
+        composable("splash") { SplashScreen(navController) }
+
         composable("login") {
             LoginScreen(
                 api = RetrofitClient.api,
@@ -57,20 +61,17 @@ fun AppNavigation(cartViewModel: CartViewModel) {
 
         composable("home") {
             MainScreen(navController = navController)
-
         }
-
 
         composable("cart") {
             CartScreen(
                 cartViewModel = cartViewModel,
                 onCheckout = {
                     navController.navigate("payment")
-                }
+                },
+                navController = navController
             )
         }
-        //composable("don_hang") { OrderScreen() }
-       // composable("profile") { ProfileScreen() }
 
         composable("forgot") {
             ForgotPasswordScreen(
@@ -91,8 +92,8 @@ fun AppNavigation(cartViewModel: CartViewModel) {
                 brands = brands
             )
         }
-        composable(route="payment")
-        {
+
+        composable(route="payment") {
             PaymentScreen(onPlaceOrder = {navController.popBackStack()})
         }
         composable(
@@ -115,5 +116,13 @@ fun AppNavigation(cartViewModel: CartViewModel) {
             )
         }
 
+        // THÊM ROUTE PROFILE
+        composable("profile") {
+            ProfileScreen(
+                userId = 1, // Thay số 1 bằng ID thật từ login
+                api = RetrofitClient.api,
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }

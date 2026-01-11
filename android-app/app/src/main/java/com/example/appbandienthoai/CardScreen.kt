@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,57 +27,75 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(
     cartViewModel: CartViewModel,
-    onCheckout: () -> Unit
+    onCheckout: () -> Unit,
+    navController: NavHostController
 ) {
     val cartItems by cartViewModel.items.collectAsState()
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Giỏ hàng",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-        Spacer(Modifier.height(16.dp))
-
-        if (cartItems.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Giỏ hàng trống")
-            }
-        } else {
-
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(cartItems) { item ->
-                    CartItemRow(
-                        item = item,
-                        onIncrease = { cartViewModel.increase(item.MaSanPham) },
-                        onDecrease = { cartViewModel.decrease(item.MaSanPham) },
-                        onRemove = { cartViewModel.remove(item.MaSanPham) }
-                    )
-
-                }
-            }
-            Spacer(Modifier.height(12.dp))
-
-            CartSummary(
-                total = cartViewModel.totalPrice(),
-                onCheckout = onCheckout
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Giỏ hàng",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                            Spacer(Modifier.height(16.dp))
+                        }
+                        }
+                    }
             )
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+        ) {
+            if (cartItems.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Giỏ hàng trống")
+                }
+            } else {
+
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(cartItems) { item ->
+                        CartItemRow(
+                            item = item,
+                            onIncrease = { cartViewModel.increase(item.MaSanPham) },
+                            onDecrease = { cartViewModel.decrease(item.MaSanPham) },
+                            onRemove = { cartViewModel.remove(item.MaSanPham) }
+                        )
+
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+
+                CartSummary(
+                    total = cartViewModel.totalPrice(),
+                    onCheckout = onCheckout
+                )
+            }
         }
     }
 }
