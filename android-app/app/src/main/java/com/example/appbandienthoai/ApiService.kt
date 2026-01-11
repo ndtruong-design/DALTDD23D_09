@@ -69,26 +69,71 @@ data class ProductDetail(
     val RAM: String
 )
 
-
-
 data class Advertise(
-
     val MaHinhAnh: Int,
     val HinhAnh: String
 )
+
 data class FilterResponse(
     val success: Boolean,
     val data: List<Product>
 )
 
+data class Order(
+    val MaDonHang: Int,
+    val NgayDatHang: String,
+    val TongTien: Double,
+    val TrangThai: Int,
+    val TrangThaiText:String,
+    val HoTen: String,
+    val SoDienThoai: String
+)
 
+data class AdminOrdersResponse(
+    val success: Boolean,
+    val orders: List<Order>,
+    val total :Int,
+)
 
+data class OrderDetailData(
+    val MaDonHang: Int,
+    val NgayDat: String,
+    val TongTien: Double,
+    val TrangThai: Int,
+    val DiaChiGiaoHang: String?,
+    val KhachHang: CustomerData
+)
 
+data class CustomerData(
+    val HoTen: String,
+    val SoDienThoai: String
+)
 
+data class OrderItemData(
+    val TenSanPham: String,
+    val SoLuong: Int,
+    val DonGia: Double,
+    val DuongLinkAnh: String?,
+    val BoNho: String,
+    val TenMau: String
+)
 
+data class OrderDetailResponse(
+    val success: Boolean,
+    val order: OrderDetailData,
+    val items: List<OrderItemData>,
+    val message: String? = null
+)
 
+data class UpdateStatusRequest(
+    val MaDonHang: Int,
+    val TrangThai: Int
+)
 
-
+data class UpdateStatusResponse(
+    val success: Boolean,
+    val message: String
+)
 
 interface ApiService {
     @POST("login.php")
@@ -106,7 +151,6 @@ interface ApiService {
     @GET("get_products.php")
     suspend fun getProduct(): List<Product>
 
-
     @GET("filter.php")
     suspend fun filterProducts(
         @Query("min") min: Int?,
@@ -115,6 +159,20 @@ interface ApiService {
     ): FilterResponse
 
     @GET("get_product_detail.php")
-    suspend fun getProductDetail(@Query("MaSanPham") id: Int):List<ProductDetail>
+    suspend fun getProductDetail(@Query("MaSanPham") id: Int): List<ProductDetail>
 
+    @GET("admin/orders/get_orders.php")
+    suspend fun getAdminOrders(
+        @Query("status") status: Int? = null
+    ): AdminOrdersResponse
+
+    @GET("admin/orders/get_order_detail.php")
+    suspend fun getOrderDetail(
+        @Query("MaDonHang") orderId: Int
+    ): OrderDetailResponse
+
+    @POST("admin/orders/update_status.php")
+    suspend fun updateOrderStatus(
+        @Body request: UpdateStatusRequest
+    ): UpdateStatusResponse
 }
