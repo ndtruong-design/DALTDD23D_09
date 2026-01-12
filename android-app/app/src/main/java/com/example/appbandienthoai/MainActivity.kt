@@ -124,5 +124,15 @@ fun AppNavigation(cartViewModel: CartViewModel) {
                 onBack = { navController.popBackStack() }
             )
         }
+
+        composable("don_hang") {
+            // LƯU Ý: Ở đây tôi đang hardcode userId = 1 giống như ProfileScreen của bạn.
+            // Thực tế bạn nên lấy userId từ DataStore/Session sau khi login.
+            OrderHistoryScreen(
+                api = RetrofitClient.api,
+                userId = 1,
+                navController = navController
+            )
+        }
     }
 }

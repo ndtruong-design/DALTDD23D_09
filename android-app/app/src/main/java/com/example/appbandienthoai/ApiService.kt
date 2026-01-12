@@ -231,6 +231,35 @@ data class UpdateProfileResponse(
     val user: UserProfile? = null
 )
 
+data class OrderHistoryResponse(
+    val success: Boolean,
+    val data: List<OrderHistoryItem>
+)
+
+data class OrderHistoryItem(
+    @SerializedName("order_id") val orderId: Int,
+    @SerializedName("date_ordered") val dateOrdered: String,
+    @SerializedName("date_expected") val dateExpected: String?,
+    @SerializedName("total_price") val totalPrice: Double,
+    @SerializedName("total_price_formatted") val totalPriceFormatted: String,
+    @SerializedName("status_code") val statusCode: Int,
+    @SerializedName("status_text") val statusText: String,
+    @SerializedName("payment_status_text") val paymentStatusText: String,
+    @SerializedName("payment_method") val paymentMethod: String?,
+    @SerializedName("address") val address: String,
+    @SerializedName("items") val items: List<OrderHistoryProduct>
+)
+
+data class OrderHistoryProduct(
+    @SerializedName("product_name") val productName: String,
+    @SerializedName("variant_info") val variantInfo: String,
+    @SerializedName("color") val color: String,
+    @SerializedName("quantity") val quantity: Int,
+    @SerializedName("price") val price: Double,
+    @SerializedName("price_formatted") val priceFormatted: String,
+    @SerializedName("image") val image: String
+)
+
 
 interface ApiService {
     @POST("login.php")
@@ -325,4 +354,9 @@ interface ApiService {
     suspend fun checkout(
         @Body body: CheckoutRequest
     ): cartResponse<Unit>
+
+    @GET("get_order_history.php")
+    suspend fun getOrderHistory(
+        @Query("user_id") userId: Int
+    ): OrderHistoryResponse
 }
