@@ -5,15 +5,25 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 
 import com.example.appbandienthoai.ui.theme.AppBanDienThoaiTheme
 import kotlin.getValue
 
 class MainActivity : ComponentActivity() {
-    val cartViewModel: CartViewModel by viewModels()
+    val cartViewModel: CartViewModel by viewModels {
+        object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return CartViewModel(RetrofitClient.api) as T
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -65,14 +75,9 @@ fun AppNavigation(cartViewModel: CartViewModel) {
         composable("cart") {
             CartScreen(
                 cartViewModel = cartViewModel,
-                onCheckout = {
-                    navController.navigate("payment")
-                },
                 navController = navController
             )
         }
-        //composable("don_hang") { OrderScreen() }
-       // composable("profile") { ProfileScreen() }
 
         composable("forgot") {
             ForgotPasswordScreen(
@@ -93,10 +98,23 @@ fun AppNavigation(cartViewModel: CartViewModel) {
                 brands = brands
             )
         }
-        composable(route="payment")
-        {
-            PaymentScreen(onPlaceOrder = {navController.popBackStack()})
-        }
+        composable(
+                route = "payment/{totalAmount}",
+        arguments = listOf(navArgument("totalAmount") { type = NavType.IntType })
+        ) { backStackEntry ->
+        val totalAmount = backStackEntry.arguments?.getInt("totalAmount") ?: 0
+
+        PaymentScreen(
+            totalAmount = totalAmount.toLong(),
+            api = RetrofitClient.api,
+            navController = navController,
+            cartViewModel = cartViewModel
+        )
+    }
+//        composable(route="payment")
+//        {
+//            PaymentScreen(onPlaceOrder = {navController.popBackStack()})
+//        }
 
     }
 }

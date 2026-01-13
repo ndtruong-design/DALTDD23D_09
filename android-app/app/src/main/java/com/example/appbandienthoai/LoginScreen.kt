@@ -42,11 +42,21 @@ fun LoginScreen(
     var errorMessage by remember { mutableStateOf("") }
     var token by remember { mutableStateOf("") }
     val context = LocalContext.current
+
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         val savedUsername = getUsername(context)
+        val savepassword=getPassword(context)
         if (!savedUsername.isNullOrEmpty()) {
             username = savedUsername
+        }
+        if(!savepassword.isNullOrEmpty()){
+            password=savepassword
+        }
+
+        val savedRememberMe = getRememberMe(context)
+        if (savedRememberMe) {
+            rememberMe = true
         }
     }
     Column(
@@ -142,15 +152,17 @@ fun LoginScreen(
                     loading = true
                     try {
                         val response = api.login(LoginRequest(username, password))
-                        if (response.success) {
+                        if (response.success) {val userId = response.MaKhachHang?:-1
                             response.token?.let {
                                 if (rememberMe) {
                                     saveUsername(context.applicationContext, username)
                                     savePassword(context.applicationContext, password)
+
                                 }
 
                                 saveToken(context.applicationContext, token)
                                 saveRememberMe(context.applicationContext, rememberMe)
+                                saveUserId(context.applicationContext, userId)
                                 onLoginSuccess()
 
                             }

@@ -14,7 +14,9 @@ data class LoginRequest(
 data class LoginResponse(
     val success: Boolean,
     val token: String?,
+    val MaKhachHang: Int?,
     val message: String?
+
 )
 
 data class RegisterRequest(
@@ -91,42 +93,68 @@ data class OrderHistoryResponse(
     val data: List<Order>
 )
 
-<<<<<<< HEAD
+
 data class CartItem(
+
+    val MaChiTietSP: Int,
     val MaSanPham: Int,
     val TenSanPham: String,
     val Gia: Int,
-    val SoLuong: Int = 1,
-    val HinhAnh: String,
+    val SoLuong: Int,
     val TenMau: String,
-    val BoNho: String
+    val BoNho: String,
+    val HinhAnh: String
+)
+data class CartItemUI(
+    val item: CartItem,
+    val isChecked: Boolean = true
 )
 
-data class AddCartRequest(
-    val MaKhachHang: Int,
-    val MaSanPham: Int,
-    val TenSanPham: String,
-    val Gia: Int,
-    val DuongLinkAnh: String,
-    val TenMau: String,
-    val BoNho: String
-)
+
+
 
 data class UpdateQuantityRequest(
     val MaKhachHang: Int,
-    val MaSanPham: Int,
+    val MaChiTietSP: Int,
     val SoLuong: Int
 )
 
 data class RemoveCartRequest(
     val MaKhachHang: Int,
-    val MaSanPham: Int
+    val MaChiTietSP: Int
 )
 
 data class CheckoutRequest(
-    val MaKhachHang: Int
+    val MaKhachHang: Int,
+    val items: List<CheckoutItem>
 )
-=======
+
+data class CheckoutItem(
+    val MaChiTietSP: Int,
+    val SoLuong: Int
+)
+data class PromoResponse(
+    val success: Boolean,
+    val message: String?,
+  val tiLeGiam: Float?
+)
+
+data class PlaceOrderRequest(
+    val MaKhachHang: Int,
+    val HoTen: String,
+    val SoDienThoai: String,
+    val DiaChi: String,
+    val MaPTTT: String,
+    val MaKhuyenMai: String?,
+    val TongTien: Long,
+    val items: List<CheckoutItem>
+)
+data class PlaceOrderResponse(
+    val success: Boolean,
+    val message: String,
+    val MaDonHang: Int?
+)
+
 data class Order(
     @SerializedName("order_id") val MaDonHang: Int,
     @SerializedName("date_ordered") val NgayDatHang: String,
@@ -146,7 +174,7 @@ data class OrderItem(
     @SerializedName("image") val HinhAnh: String
 )
 
->>>>>>> 39ac91798287cfd6852db976bb681d41760efec8
+
 
 interface ApiService {
     @POST("login.php")
@@ -172,39 +200,42 @@ interface ApiService {
         @Query("hang") hang: String?
     ): FilterResponse
 
-    @GET("get_product_detail.php")
-    suspend fun getProductDetail(@Query("MaSanPham") id: Int):List<ProductDetail>
-    @GET("cart/get.php")
-    suspend fun getCart(
-        @Query("user_id") userId: Int
+
+    @GET("card/get.php")
+    suspend fun getCard(
+        @Query("MaKhachHang") MaKhachHang: Int
     ): cartResponse<List<CartItem>>
-
-
-<<<<<<< HEAD
-    @POST("cart/add.php")
-    suspend fun addToCart(
-        @Body body: AddCartRequest
-    ): cartResponse<Unit>
-
-
-    @POST("cart/update.php")
+    @POST("card/update.php")
     suspend fun updateQuantity(
         @Body body: UpdateQuantityRequest
     ): cartResponse<Unit>
 
 
-    @POST("cart/remove.php")
+    @POST("card/remove.php")
     suspend fun removeItem(
         @Body body: RemoveCartRequest
     ): cartResponse<Unit>
 
 
-    @POST("cart/checkout.php")
+    @POST("card/check.php")
     suspend fun checkout(
         @Body body: CheckoutRequest
     ): cartResponse<Unit>
-=======
+
+    @GET("get_khuyen_mai.php")
+    suspend fun checkPromoCode(
+        @Query("code") code: String,
+        @Query("total") total: Long
+    ):PromoResponse
+    @POST("place_order.php")
+    suspend fun placeOrder(
+        @Body request: PlaceOrderRequest
+    ): PlaceOrderResponse
+    @GET("get_user_info.php")
+    suspend fun getUserInfo(
+        @Query("user_id") userId: Int
+    ): cartResponse<PlaceOrderRequest>
     @GET("get_order_history.php")
     suspend fun getOrderHistory(@Query("user_id") userId: Int): OrderHistoryResponse
->>>>>>> 39ac91798287cfd6852db976bb681d41760efec8
+
 }

@@ -7,9 +7,10 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
 
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 
 val Context.dataStore by preferencesDataStore(name = "app_prefs")
-
+val USER_ID_KEY = intPreferencesKey("MaKhachHang")
 val JWT_KEY = stringPreferencesKey("jwt_token")
 val REMEMBER_ME_KEY = booleanPreferencesKey("remember_me")
 val USERNAME_KEY = stringPreferencesKey("username")
@@ -31,6 +32,17 @@ suspend fun savePassword(context: Context, password: String) {
     }
 }
 
+
+
+suspend fun saveUserId(context: Context, userId: Int) {
+    context.dataStore.edit { preferences ->
+        preferences[USER_ID_KEY] = userId
+    }
+}
+
+suspend fun getUserId(context: Context): Int {
+    return context.dataStore.data.first()[USER_ID_KEY] ?: -1
+}
 suspend fun getPassword(context: Context): String? {
     return context.dataStore.data.first()[PASSWORD_KEY]
 }

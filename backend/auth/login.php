@@ -67,6 +67,7 @@ $payload = [
     "exp" => time()+$JWT_EXPIRE,
     "data" => [
         "TenDangNhap" => $user['TenDangNhap'],
+        "MaKhachHang" => $user['MaKhachHang'],
     ]
 ];
 
@@ -75,6 +76,7 @@ $token = JWT::encode($payload, $JWT_SECRET, 'HS256');
 echo json_encode([
     "success" => true,
     "token" => $token,
+    "MaKhachHang" => (int)$user['MaKhachHang'], 
     "message" => "Đăng nhập thành công"
 ]);
 ?>

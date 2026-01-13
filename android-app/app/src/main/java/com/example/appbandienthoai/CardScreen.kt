@@ -1,16 +1,15 @@
 package com.example.appbandienthoai
 
-import androidx.compose.foundation.Image
+import android.R.attr.checked
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,25 +18,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import kotlinx.coroutines.launch
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(
     cartViewModel: CartViewModel,
-    onCheckout: () -> Unit,
     navController: NavHostController
 ) {
+    val context = LocalContext.current
+    val total by cartViewModel.total.collectAsState()
     val cartItems by cartViewModel.items.collectAsState()
+    LaunchedEffect(Unit) {
+        val userId = getUserId(context)
+        if (userId != -1) {
+            cartViewModel.loadCart(userId)
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -54,7 +56,7 @@ fun CartScreen(
                         )
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                            Spacer(Modifier.height(16.dp))
+
                         }
                         }
                     }
@@ -81,10 +83,14 @@ fun CartScreen(
                 ) {
                     items(cartItems) { item ->
                         CartItemRow(
-                            item = item,
-                            onIncrease = { cartViewModel.increase(item.MaSanPham) },
-                            onDecrease = { cartViewModel.decrease(item.MaSanPham) },
-                            onRemove = { cartViewModel.remove(item.MaSanPham) }
+                            item =item,
+                            onCheckedChange = {
+                                cartViewModel.toggleCheck(item.item.MaChiTietSP)
+                            },
+                            onIncrease = { cartViewModel.increase(item.item.MaChiTietSP) } ,
+                                    onDecrease = { cartViewModel.decrease(item.item.MaChiTietSP) },
+                                    onRemove   = { cartViewModel.remove(item.item.MaChiTietSP) }
+
                         )
 
                     }
@@ -92,8 +98,19 @@ fun CartScreen(
                 Spacer(Modifier.height(12.dp))
 
                 CartSummary(
-                    total = cartViewModel.totalPrice(),
-                    onCheckout = onCheckout
+                    total = total,
+                    onCheckout = {
+                        cartViewModel.processCheckout(
+                            onSuccess = {
+
+                                android.widget.Toast.makeText(context, "Đã chọn hàng cần mua", android.widget.Toast.LENGTH_SHORT).show()
+                                navController.navigate("payment/$total")
+                            },
+                            onError = { message ->
+                                android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
                 )
             }
         }
@@ -102,7 +119,8 @@ fun CartScreen(
 
 @Composable
 fun CartItemRow(
-    item: CartItem,
+    item: CartItemUI,
+    onCheckedChange: () -> Unit,
     onIncrease: () -> Unit,
     onDecrease: () -> Unit,
     onRemove: () -> Unit
@@ -113,17 +131,20 @@ fun CartItemRow(
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-
-        AsyncImage(model = item.HinhAnh, contentDescription = item.TenSanPham, modifier = Modifier
+        Checkbox(
+            checked = item.isChecked,
+            onCheckedChange = { onCheckedChange() }
+        )
+        AsyncImage(model = item.item.HinhAnh, contentDescription = item.item.TenSanPham, modifier = Modifier
                 .size(80.dp)
                 .clip(RoundedCornerShape(8.dp)), contentScale = ContentScale.Fit)
 
         Spacer(Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(item.TenSanPham, fontWeight = FontWeight.Bold, maxLines = 2)
-            Text("Màu: ${item.TenMau} • ${item.BoNho}", fontSize = 12.sp)
-            Text("${item.Gia}đ", color = Color(0xFF6A1B9A))
+            Text(item.item.TenSanPham, fontWeight = FontWeight.Bold, maxLines = 2)
+            Text("Màu: ${item.item.TenMau} • ${item.item.BoNho}", fontSize = 12.sp)
+            Text("${item.item.Gia}đ", color = Color(0xFF6A1B9A))
         }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -134,7 +155,7 @@ fun CartItemRow(
                 }
 
                 Text(
-                    text = item.SoLuong.toString(),
+                    text = item.item.SoLuong.toString(),
                     fontWeight = FontWeight.Bold
                 )
 
