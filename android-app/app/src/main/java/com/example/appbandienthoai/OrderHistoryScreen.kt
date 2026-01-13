@@ -6,10 +6,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +36,7 @@ fun OrderHistoryScreen(
     var orders by remember { mutableStateOf<List<OrderHistoryItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
-
+    // Gọi API khi màn hình được tạo
     LaunchedEffect(Unit) {
         try {
             val response = api.getOrderHistory(userId)
@@ -49,51 +53,112 @@ fun OrderHistoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Lịch sử đơn hàng") },
+                title = { Text("Quản lý đơn hàng", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    // Nút Back (nếu cần thiết, tuỳ navigation của bạn)
-                    // Nếu tab này nằm ở BottomBar thì có thể không cần nút back
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
                 }
             )
         }
     ) { padding ->
         if (isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
-        } else if (orders.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Bạn chưa có đơn hàng nào.", color = Color.Gray)
-            }
         } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .background(Color(0xFFF5F5F5)), // Màu nền xám nhẹ
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(16.dp)
-            ) {
-                items(orders) { order ->
-                    OrderItemCard(order)
-                }
+            // Logic chia danh sách đơn hàng theo trạng thái
+            // 0: Chờ duyệt, 1: Đang giao -> Tab Đơn hàng
+            val activeOrders = orders.filter { it.statusCode == 0 || it.statusCode == 1 }
+            // 2: Thành công, 3: Hủy -> Tab Lịch sử
+            val historyOrders = orders.filter { it.statusCode == 2 || it.statusCode == 3 }
+
+            Column(modifier = Modifier.padding(padding)) {
+                OrderTabContent(activeOrders, historyOrders)
             }
         }
     }
 }
 
 @Composable
+fun OrderTabContent(
+    activeOrders: List<OrderHistoryItem>,
+    historyOrders: List<OrderHistoryItem>
+) {
+    val tabTitles = listOf("Đơn hàng", "Lịch sử")
+    val pagerState = rememberPagerState(pageCount = { tabTitles.size })
+    val coroutineScope = rememberCoroutineScope()
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // --- Tab Row ---
+        TabRow(
+            selectedTabIndex = pagerState.currentPage,
+            containerColor = Color.White,
+            contentColor = MaterialTheme.colorScheme.primary,
+            indicator = { tabPositions ->
+                TabRowDefaults.Indicator(
+                    Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        ) {
+            tabTitles.forEachIndexed { index, title ->
+                Tab(
+                    selected = pagerState.currentPage == index,
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
+                    text = {
+                        Text(
+                            text = title,
+                            fontWeight = if (pagerState.currentPage == index) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                )
+            }
+        }
+
+        // --- Nội dung từng Tab (Pager) ---
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF5F5F5)) // Màu nền xám nhẹ
+        ) { page ->
+            val currentList = if (page == 0) activeOrders else historyOrders
+
+            if (currentList.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = if (page == 0) "Không có đơn hàng nào đang xử lý" else "Chưa có lịch sử đơn hàng",
+                        color = Color.Gray
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(16.dp)
+                ) {
+                    items(currentList) { order ->
+                        OrderItemCard(order)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// --- Giữ nguyên các Component con như cũ ---
+
+@Composable
 fun OrderItemCard(order: OrderHistoryItem) {
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(4.dp),
+        elevation = CardDefaults.cardElevation(2.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {

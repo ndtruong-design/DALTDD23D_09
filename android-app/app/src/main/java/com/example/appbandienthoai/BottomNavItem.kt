@@ -1,10 +1,10 @@
 package com.example.appbandienthoai
 
-import androidx.compose.foundation.layout.Box
+
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DeliveryDining
-import androidx.compose.material.icons.filled.History
+
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -18,7 +18,6 @@ data class BottomNavItem (
 val bottomNavItems = listOf(
     BottomNavItem("Trang chủ", Icons.Default.Home,"home"),
     BottomNavItem("Giỏ hàng", Icons.Default.ShoppingCart,"cart"),
-    BottomNavItem("Đơn hàng", Icons.Default.DeliveryDining,"don_hang"),
-    BottomNavItem("Lịch sử", Icons.Default.History,"lich_su"),
+    BottomNavItem("Đơn hàng", Icons.Default.LocalShipping,"don_hang"),
     BottomNavItem("Tài khoản", Icons.Default.Person,"profile")
 )
