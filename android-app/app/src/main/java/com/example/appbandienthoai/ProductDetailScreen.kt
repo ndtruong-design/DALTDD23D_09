@@ -1,0 +1,244 @@
+package com.example.appbandienthoai
+
+import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProductDetailScreen(
+    maSanPham: Int,
+    boNho: String,
+    onBackClick: () -> Unit
+) {
+    var product by remember { mutableStateOf<ProductDetail?>(null) }
+    var productImage by remember { mutableStateOf<List<ImageDetail>>(emptyList()) }
+    var colorList by remember { mutableStateOf<List<ColorPhone>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMsg by remember { mutableStateOf<String?>(null) }
+    var selectedMemory by remember { mutableStateOf(boNho) }
+    val memoryOptions = listOf("256GB", "512GB")
+
+    var selectedColorId by remember { mutableStateOf("") }
+
+    // 1. Lấy chi tiết sản phẩm và danh sách màu từ API
+    LaunchedEffect(maSanPham, selectedMemory, selectedColorId) {
+        try {
+            isLoading = true
+            errorMsg = null
+            // Lấy chi tiết variant dựa trên Sản phẩm + Bộ nhớ + Màu sắc
+            val response = RetrofitClient.api.getProductDetail(
+                maSanPham, 
+                selectedMemory, 
+                selectedColorId.ifEmpty { null }
+            )
+            product = response
+
+            if (response != null) {
+                try {
+                    val colors = RetrofitClient.api.getColor(response.MaSanPham, response.BoNho)
+                    colorList = colors.filter { !it.MaHex.isNullOrEmpty() }
+                    
+                    if (selectedColorId.isEmpty() && colorList.isNotEmpty()) {
+                        selectedColorId = response.MaMau.toString()
+                    }
+                } catch (e: Exception) {
+                    Log.e("PRODUCT_ERROR", "Color fetch failed: ${e.message}")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("PRODUCT_ERROR", "Detail fetch failed: ${e.message}")
+            errorMsg = "Không thể tải thông tin sản phẩm"
+        } finally {
+            isLoading = false
+        }
+    }
+
+    // 2. Lấy hình ảnh khi Mã Màu thay đổi
+    LaunchedEffect(selectedColorId, product?.MaChiTietSP) {
+        val currentMaSanPham = product?.MaSanPham
+        if (selectedColorId.isNotEmpty() && currentMaSanPham != null) {
+            try {
+                val imgRes = RetrofitClient.api.getImageDetail(currentMaSanPham, selectedColorId)
+                productImage = imgRes
+            } catch (e: Exception) {
+                Log.e("PRODUCT_ERROR", "Image fetch failed: ${e.message}")
+                productImage = emptyList()
+            }
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Chi tiết sản phẩm") },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Quay lại")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+            if (isLoading && product == null) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else if (errorMsg != null) {
+                Text(errorMsg!!, color = Color.Red, modifier = Modifier.align(Alignment.Center))
+            } else if (product != null) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp)
+                ) {
+                    // 1. Hình ảnh
+                    if (productImage.isNotEmpty()) {
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(300.dp)
+                                .background(Color.White),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(productImage) { imgDetail ->
+                                AsyncImage(
+                                    model = imgDetail.DuongLinkAnh,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .width(350.dp)
+                                        .fillMaxHeight()
+                                        .clip(RoundedCornerShape(8.dp)),
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp)
+                                .background(Color.LightGray),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Đang tải ảnh...")
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // 2. Thông tin cơ bản
+                    Text(text = product?.Hang ?: "", color = Color.Gray, fontSize = 14.sp)
+                    Text(text = product?.TenSanPham ?: "", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Giá: ${product?.Gia ?: 0} VND",
+                        fontSize = 22.sp,
+                        color = Color.Red,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                    // 3. Chọn bộ nhớ
+                    Text("Phiên bản bộ nhớ:", fontWeight = FontWeight.Bold)
+                    Row(modifier = Modifier.padding(vertical = 8.dp)) {
+                        memoryOptions.forEach { mem ->
+                            FilterChip(
+                                selected = selectedMemory == mem,
+                                onClick = { 
+                                    selectedMemory = mem 
+                                    selectedColorId = "" // Reset để load lại theo cấu hình mới
+                                },
+                                label = { Text(mem) },
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        }
+                    }
+
+                    // 4. Chọn màu sắc (Chỉ hiện màu có MaHex từ API)
+                    if (colorList.isNotEmpty()) {
+                        Text("Chọn màu sắc:", fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+                        LazyRow(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(colorList) { colorPhone ->
+                                val isSelected = selectedColorId == colorPhone.MaMau.toString()
+                                
+                                val hex = colorPhone.MaHex ?: return@items
+                                val hexColor = if (hex.startsWith("#")) hex else "#$hex"
+                                val composeColor = try {
+                                    Color(android.graphics.Color.parseColor(hexColor))
+                                } catch (e: Exception) {
+                                    Color.Gray
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(composeColor)
+                                        .border(
+                                            width = if (isSelected) 3.dp else 1.dp,
+                                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.LightGray,
+                                            shape = CircleShape
+                                        )
+                                        .clickable { selectedColorId = colorPhone.MaMau.toString() }
+                                )
+                            }
+                        }
+                        val selectedColor = colorList.find { it.MaMau.toString() == selectedColorId }
+                        Text(
+                            text = "Màu đang chọn: ${selectedColor?.TenMau ?: "Chưa chọn"}",
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // 5. Mô tả sản phẩm
+                    Text("Mô tả sản phẩm:", fontWeight = FontWeight.Bold)
+                    Text(
+                        text = product?.MoTa ?: "Đang cập nhật...",
+                        modifier = Modifier.padding(top = 8.dp),
+                        lineHeight = 22.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // 6. Nút mua hàng
+                    Button(
+                        onClick = { /* Logic thêm vào giỏ hàng */ },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("THÊM VÀO GIỎ HÀNG", fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+    }
+}

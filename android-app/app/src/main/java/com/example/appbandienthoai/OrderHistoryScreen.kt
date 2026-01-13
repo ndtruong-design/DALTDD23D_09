@@ -2,6 +2,7 @@ package com.example.appbandienthoai
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,27 +19,28 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OrderHistoryScreen(navController: NavHostController) {
-    var orderList by remember { mutableStateOf<List<Order>>(emptyList()) }
+fun OrderHistoryScreen(
+    api: ApiService,
+    userId: Int, // Nhận userId từ MainActivity hoặc DataStore
+    navController: NavController
+) {
+    var orders by remember { mutableStateOf<List<OrderHistoryItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // TODO: Trong thực tế, bạn cần lấy userId từ Token hoặc SharedPreferences
-    // Ở đây mình giả định userId = 1 để test api
-    val currentUserId = 1
-
+    // Gọi API khi màn hình được tạo
     LaunchedEffect(Unit) {
         try {
-            val response = RetrofitClient.api.getOrderHistory(currentUserId)
+            val response = api.getOrderHistory(userId)
             if (response.success) {
-                orderList = response.data
+                orders = response.data
             }
         } catch (e: Exception) {
-            Log.e("OrderHistory", "Error: ${e.message}")
+            Log.e("ORDER_HISTORY", "Error: ${e.message}")
         } finally {
             isLoading = false
         }
@@ -47,59 +49,39 @@ fun OrderHistoryScreen(navController: NavHostController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Lịch sử đơn hàng", fontWeight = FontWeight.Bold) },
+                title = { Text("Lịch sử đơn hàng") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
+                    // Nút Back (nếu cần thiết, tuỳ navigation của bạn)
+                    // Nếu tab này nằm ở BottomBar thì có thể không cần nút back
                 }
             )
-        },
-        bottomBar = {
-            // Tái sử dụng NavigationBar để giữ đồng bộ giao diện
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                bottomNavItems.forEach { item ->
-                    val selected = item.route == "lich_su"
-                    NavigationBarItem(
-                        selected = selected,
-                        onClick = {
-                            if (item.route != "lich_su") {
-                                navController.navigate(item.route) {
-                                    popUpTo("home") { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        },
-                        label = { Text(item.title) },
-                        icon = { Icon(item.icon, contentDescription = item.title) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer
-                        )
-                    )
-                }
-            }
         }
-    ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
-            if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (orderList.isEmpty()) {
-                Text(
-                    text = "Bạn chưa có đơn hàng nào",
-                    modifier = Modifier.align(Alignment.Center),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Gray
-                )
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(orderList) { order ->
-                        OrderItemCard(order)
-                    }
+    ) { padding ->
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (orders.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Bạn chưa có đơn hàng nào.", color = Color.Gray)
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .background(Color(0xFFF5F5F5)), // Màu nền xám nhẹ
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(16.dp)
+            ) {
+                items(orders) { order ->
+                    OrderItemCard(order)
                 }
             }
         }
@@ -107,103 +89,66 @@ fun OrderHistoryScreen(navController: NavHostController) {
 }
 
 @Composable
-fun OrderItemCard(order: Order) {
+fun OrderItemCard(order: OrderHistoryItem) {
     Card(
-        elevation = CardDefaults.cardElevation(4.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(4.dp),
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // 1. Header: Mã đơn + Trạng thái
+            // --- Header: Mã đơn + Trạng thái ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Đơn hàng #${order.MaDonHang}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    text = "Đơn hàng #${order.orderId}",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
-                OrderStatusChip(order.TrangThaiCode, order.TrangThaiText)
+                StatusChip(statusText = order.statusText, statusCode = order.statusCode)
             }
 
             Text(
-                text = order.NgayDatHang,
+                text = "Ngày đặt: ${order.dateOrdered}",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
-            // 2. Danh sách sản phẩm trong đơn
+            // --- List sản phẩm trong đơn ---
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                order.ChiTiet.forEach { item ->
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        AsyncImage(
-                            model = item.HinhAnh,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(60.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color.LightGray),
-                            contentScale = ContentScale.Crop
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = item.TenSanPham,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                maxLines = 1
-                            )
-                            Text(
-                                text = "${item.MauSac} | ${item.ThongTinPhienBan}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray
-                            )
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "x${item.SoLuong}",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                                Text(
-                                    text = item.GiaHienThi,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    }
+                order.items.forEach { product ->
+                    ProductRowItem(product)
                 }
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
-            // 3. Tổng tiền
+            // --- Footer: Tổng tiền ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
                     Text(
-                        text = "Thanh toán: ${order.TrangThaiThanhToan}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if(order.TrangThaiThanhToan.contains("Đã thanh toán")) Color(0xFF4CAF50) else Color.Gray
+                        text = order.paymentStatusText,
+                        fontSize = 12.sp,
+                        color = if (order.paymentStatusText == "Đã thanh toán") Color(0xFF2E7D32) else Color(0xFFE65100)
                     )
+                    Text(text = "${order.items.size} sản phẩm", fontSize = 12.sp, color = Color.Gray)
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(text = "Tổng tiền", style = MaterialTheme.typography.bodySmall)
+                    Text("Tổng cộng", fontSize = 12.sp, color = Color.Gray)
                     Text(
-                        text = order.TongTienHienThi,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color(0xFFD32F2F),
-                        fontWeight = FontWeight.Bold
+                        text = order.totalPriceFormatted,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFD32F2F), // Màu đỏ cho giá
+                        fontSize = 16.sp
                     )
                 }
             }
@@ -212,26 +157,64 @@ fun OrderItemCard(order: Order) {
 }
 
 @Composable
-fun OrderStatusChip(statusCode: Int, statusText: String) {
+fun ProductRowItem(product: OrderHistoryProduct) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        AsyncImage(
+            model = product.image,
+            contentDescription = null,
+            modifier = Modifier
+                .size(60.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp)),
+            contentScale = ContentScale.Crop
+        )
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = product.productName,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                fontSize = 14.sp
+            )
+            Text(
+                text = "${product.variantInfo} | ${product.color}",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("x${product.quantity}", fontSize = 14.sp)
+                Text(product.priceFormatted, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            }
+        }
+    }
+}
+
+@Composable
+fun StatusChip(statusText: String, statusCode: Int) {
     val (bgColor, textColor) = when (statusCode) {
-        0 -> Color(0xFFFFF3E0) to Color(0xFFEF6C00) // Chờ duyệt (Cam nhạt)
-        1 -> Color(0xFFE3F2FD) to Color(0xFF1976D2) // Đang giao (Xanh dương)
-        2 -> Color(0xFFE8F5E9) to Color(0xFF388E3C) // Thành công (Xanh lá)
-        3 -> Color(0xFFFFEBEE) to Color(0xFFD32F2F) // Hủy (Đỏ)
+        0 -> Color(0xFFFFF3E0) to Color(0xFFEF6C00) // Chờ duyệt: Cam
+        1 -> Color(0xFFE3F2FD) to Color(0xFF1565C0) // Đang giao: Xanh dương
+        2 -> Color(0xFFE8F5E9) to Color(0xFF2E7D32) // Thành công: Xanh lá
+        3 -> Color(0xFFFFEBEE) to Color(0xFFC62828) // Hủy: Đỏ
         else -> Color.LightGray to Color.Black
     }
 
     Surface(
         color = bgColor,
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.wrapContentSize()
+        modifier = Modifier.padding(start = 8.dp)
     ) {
         Text(
             text = statusText,
             color = textColor,
-            style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            fontWeight = FontWeight.Bold
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
     }
 }
