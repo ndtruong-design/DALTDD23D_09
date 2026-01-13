@@ -26,13 +26,13 @@ import coil.compose.AsyncImage
 @Composable
 fun OrderHistoryScreen(
     api: ApiService,
-    userId: Int, // Nhận userId từ MainActivity hoặc DataStore
+    userId: Int,
     navController: NavController
 ) {
     var orders by remember { mutableStateOf<List<OrderHistoryItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // Gọi API khi màn hình được tạo
+
     LaunchedEffect(Unit) {
         try {
             val response = api.getOrderHistory(userId)

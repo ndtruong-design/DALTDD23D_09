@@ -103,7 +103,7 @@ class CartViewModel(private val api: ApiService) : ViewModel() {
                     items = checkoutItems
                 )
 
-                val res = api.checkout(request)
+                val res = api.check(request)
                 if (res.success) {
 
                     loadCart(currentUserId)

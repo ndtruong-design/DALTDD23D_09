@@ -9,7 +9,7 @@ use Firebase\JWT\JWT;
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-$username    = $data['TenDangNhap'] ?? '';
+$username = $data['TenDangNhap'] ?? '';
 $password = $data['MatKhau'] ?? '';
 
 if (!$username || !$password) {
@@ -21,62 +21,66 @@ if (!$username || !$password) {
     exit;
 }
 
-$sqladmin = "SELECT * FROM khachhang WHERE TenDangNhap=:TenDangNhap";
-$stmtadmin = $conn->prepare($sqladmin);
-$stmtadmin->execute([":TenDangNhap" => $username]);
-$useradmin = $stmtadmin->fetch(PDO::FETCH_ASSOC);
-if (!$useradmin ||
+
+$sqlAdmin = "SELECT * FROM admin WHERE TenDangNhap=:TenDangNhap LIMIT 1";
+$stmtAdmin = $conn->prepare($sqlAdmin);
+$stmtAdmin->execute([":TenDangNhap" => $username]);
+$userAdmin = $stmtAdmin->fetch(PDO::FETCH_ASSOC);
+
+if ($userAdmin) {
+    if (password_verify($password, $userAdmin['MatKhau']) || $password === $userAdmin['MatKhau']) {
+        $accountType = "admin";
+        $userId = (int)$userAdmin['MaAdmin']; 
+        $userData = $userAdmin;
+    } else {
+        http_response_code(401);
+        echo json_encode([
+            "success" => false,
+            "message" => "Sai tên đăng nhập hoặc mật khẩu"
+        ]);
+        exit;
+    }
+} else {
     
-        !password_verify($password, $useradmin['MatKhau']) &&
-        $password !== $useradmin['MatKhau']
-    ) {
-    http_response_code(401);
-    echo json_encode([
-        "success" => false,
-        "message" => "Sai tên đăng nhập hoặc mật khẩu"
-    ]);
-    exit;
+    $sqlUser = "SELECT * FROM khachhang WHERE TenDangNhap=:TenDangNhap LIMIT 1";
+    $stmtUser = $conn->prepare($sqlUser);
+    $stmtUser->execute([":TenDangNhap" => $username]);
+    $user = $stmtUser->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user || (!password_verify($password, $user['MatKhau']) && $password !== $user['MatKhau'])) {
+        http_response_code(401);
+        echo json_encode([
+            "success" => false,
+            "message" => "Sai tên đăng nhập hoặc mật khẩu"
+        ]);
+        exit;
+    }
+
+    $accountType = "user";
+    $userId = (int)$user['MaKhachHang'];
+    $userData = $user;
 }
-
-$sql = "SELECT * FROM khachhang WHERE TenDangNhap=:TenDangNhap";
-$stmt = $conn->prepare($sql);
-$stmt->execute([":TenDangNhap" => $username]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (
-    !$user ||
-    (
-        !password_verify($password, $user['MatKhau']) &&
-        $password !== $user['MatKhau']
-    )
-) {
-    http_response_code(401);
-    echo json_encode([
-        "success" => false,
-        "message" => "Sai tên đăng nhập hoặc mật khẩu"
-    ]);
-    exit;
-}
-
-
 
 
 $payload = [
     "iss" => $JWT_ISSUER,
     "iat" => time(),
-    "exp" => time()+$JWT_EXPIRE,
+    "exp" => time() + $JWT_EXPIRE,
     "data" => [
-        "TenDangNhap" => $user['TenDangNhap'],
-        "MaKhachHang" => $user['MaKhachHang'],
+        "TenDangNhap" => $userData['TenDangNhap'],
+        "MaKhachHang" => $userId,
+        "accountType" => $accountType
     ]
 ];
 
 $token = JWT::encode($payload, $JWT_SECRET, 'HS256');
 
+
 echo json_encode([
     "success" => true,
     "token" => $token,
-    "MaKhachHang" => (int)$user['MaKhachHang'], 
+    "accountType" => $accountType,
+    "MaKhachHang" => $userId,
     "message" => "Đăng nhập thành công"
 ]);
 ?>

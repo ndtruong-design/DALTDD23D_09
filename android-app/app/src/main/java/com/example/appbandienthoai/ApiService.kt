@@ -14,9 +14,9 @@ data class LoginRequest(
 data class LoginResponse(
     val success: Boolean,
     val token: String?,
+    val accountType:String?,
     val MaKhachHang: Int?,
     val message: String?
-
 )
 
 data class RegisterRequest(
@@ -109,19 +109,11 @@ data class cartResponse<T>(
     val message: String? = null
 )
 
-data class Order(
-    val MaDonHang: Int,
-    val NgayDatHang: String,
-    val TongTien: Double,
-    val TrangThai: Int,
-    val TrangThaiText: String,
-    val HoTen: String,
-    val SoDienThoai: String
-)
+
 
 data class AdminOrdersResponse(
     val success: Boolean,
-    val orders: List<Order>,
+    val orders: List<OrderAdmin>,
     val total: Int,
 )
 
@@ -183,10 +175,7 @@ data class ProfileResponse(
     val message: String? = null
 )
 
-<<<<<<< HEAD
 
-=======
->>>>>>> cb342957ce8dc201ad23364afa3f3cd981701307
 data class CartItem(
 
     val MaChiTietSP: Int,
@@ -221,7 +210,7 @@ data class CheckoutRequest(
     val MaKhachHang: Int,
     val items: List<CheckoutItem>
 )
-<<<<<<< HEAD
+
 
 data class CheckoutItem(
     val MaChiTietSP: Int,
@@ -230,7 +219,7 @@ data class CheckoutItem(
 data class PromoResponse(
     val success: Boolean,
     val message: String?,
-  val tiLeGiam: Float?
+  val TiLeGiam: Float?
 )
 
 data class PlaceOrderRequest(
@@ -248,16 +237,16 @@ data class PlaceOrderResponse(
     val message: String,
     val MaDonHang: Int?
 )
+data class OrderAdmin(
+    val MaDonHang: Int,
+    val NgayDatHang: String,
+    val TongTien: Double,
+    val TrangThai: Int,
+    val TrangThaiText: String,
+    val HoTen: String,
+    val SoDienThoai: String
+)
 
-data class Order(
-    @SerializedName("order_id") val MaDonHang: Int,
-    @SerializedName("date_ordered") val NgayDatHang: String,
-    @SerializedName("total_price_formatted") val TongTienHienThi: String,
-    @SerializedName("status_text") val TrangThaiText: String,
-    @SerializedName("status_code") val TrangThaiCode: Int,
-    @SerializedName("payment_status_text") val TrangThaiThanhToan: String,
-    @SerializedName("items") val ChiTiet: List<OrderItem>
-=======
 data class UpdateProfileRequest(
     val MaKhachHang:  Int,
     val HoTen: String?  = null,
@@ -266,7 +255,6 @@ data class UpdateProfileRequest(
     val NgaySinh: String?  = null,
     val DiaChi: String? = null,
     val AnhDaiDien: String? = null
->>>>>>> cb342957ce8dc201ad23364afa3f3cd981701307
 )
 
 data class UpdateProfileResponse(
@@ -304,65 +292,56 @@ data class OrderHistoryProduct(
     @SerializedName("image") val image: String
 )
 
-<<<<<<< HEAD
 
-=======
->>>>>>> cb342957ce8dc201ad23364afa3f3cd981701307
 
 interface ApiService {
-    @POST("login.php")
+    @POST("auth/login.php")
     suspend fun login(@Body request: LoginRequest): LoginResponse
 
-    @POST("register.php")
+    @POST("auth/register.php")
     suspend fun register(@Body request: RegisterRequest): RegisterResponse
 
-    @POST("forgotpassword.php")
+    @POST("auth/forgotpassword.php")
     suspend fun forgotPassword(@Body request: ForgotPasswordRequest): ForgotPasswordResponse
 
-    @GET("get_ads.php")
+    @GET("auth/get_ads.php")
     suspend fun getAds(): List<Advertise>
 
-    @GET("get_products.php")
+    @GET("auth/get_products.php")
     suspend fun getProduct(): List<Product>
 
-    @GET("filter.php")
+    @GET("auth/filter.php")
     suspend fun filterProducts(
         @Query("min") min: Int?,
         @Query("max") max: Int?,
         @Query("hang") hang: String?
     ): FilterResponse
 
-<<<<<<< HEAD
 
-    @GET("card/get.php")
+
+    @GET("auth/card/get.php")
     suspend fun getCard(
         @Query("MaKhachHang") MaKhachHang: Int
     ): cartResponse<List<CartItem>>
-    @POST("card/update.php")
-=======
-    @GET("get_product_detail.php")
 
+    @GET("auth/get_product_detail.php")
     suspend fun getProductDetail(
         @Query("MaSanPham") maSanPham: Int,
         @Query("BoNho") boNho: String,
         @Query("MaMau") maMau: String? = null
     ): ProductDetail
 
-    @GET("get_image_detail.php")
+    @GET("auth/get_image_detail.php")
     suspend fun getImageDetail(
         @Query("MaSanPham") maSanPham: Int,
         @Query("MaMau") maMau: String
     ): List<ImageDetail>
 
-    @GET("get_color.php")
+    @GET("auth/get_color.php")
     suspend fun getColor(
         @Query("MaSanPham") MaSanPham: Int,
         @Query("BoNho")BoNho: String
     ): List<ColorPhone>
-
-    suspend fun getProductDetail(@Query("MaSanPham") id: Int): List<ProductDetail>
-
-
     @GET("admin/orders/get_orders.php")
     suspend fun getAdminOrders(
         @Query("status") status: Int? = null
@@ -378,72 +357,56 @@ interface ApiService {
         @Body request: UpdateStatusRequest
     ): UpdateStatusResponse
 
-    @GET("get_profile.php")
+    @GET("auth/get_profile.php")
     suspend fun getProfile(
         @Query("MaKhachHang") userId: Int
     ): ProfileResponse
-    @POST("update_profile.php")
+    @POST("auth/update_profile.php")
     suspend fun updateProfile(
         @Body request: UpdateProfileRequest
     ): UpdateProfileResponse
-    @GET("cart/get.php")
-    suspend fun getCart(
-        @Query("user_id") userId: Int
-    ): cartResponse<List<CartItem>>
+    @POST("auth/card/update.php")
 
-    @POST("cart/add.php")
-    suspend fun addToCart(
-        @Body body: AddCartRequest
-    ): cartResponse<Unit>
-
-    @POST("cart/update.php")
->>>>>>> cb342957ce8dc201ad23364afa3f3cd981701307
     suspend fun updateQuantity(
         @Body body: UpdateQuantityRequest
     ): cartResponse<Unit>
 
-<<<<<<< HEAD
 
-    @POST("card/remove.php")
-=======
-    @POST("cart/remove.php")
->>>>>>> cb342957ce8dc201ad23364afa3f3cd981701307
+
+
+    @POST("auth/card/remove.php")
     suspend fun removeItem(
         @Body body: RemoveCartRequest
     ): cartResponse<Unit>
 
-<<<<<<< HEAD
 
-    @POST("card/check.php")
-=======
-    @POST("cart/checkout.php")
->>>>>>> cb342957ce8dc201ad23364afa3f3cd981701307
-    suspend fun checkout(
+
+    @POST("auth/card/check.php")
+    suspend fun check(
         @Body body: CheckoutRequest
     ): cartResponse<Unit>
 
-<<<<<<< HEAD
-    @GET("get_khuyen_mai.php")
+
+    @GET("auth/get_khuyen_mai.php")
     suspend fun checkPromoCode(
-        @Query("code") code: String,
+        @Query("MaKhuyenMai") MaKhuyenMai: String?,
         @Query("total") total: Long
     ):PromoResponse
-    @POST("place_order.php")
+    @POST("auth/place_order.php")
     suspend fun placeOrder(
         @Body request: PlaceOrderRequest
     ): PlaceOrderResponse
-    @GET("get_user_info.php")
+    @GET("auth/get_user_info.php")
     suspend fun getUserInfo(
         @Query("user_id") userId: Int
     ): cartResponse<PlaceOrderRequest>
-    @GET("get_order_history.php")
-    suspend fun getOrderHistory(@Query("user_id") userId: Int): OrderHistoryResponse
 
-}
-=======
-    @GET("get_order_history.php")
+
+
+
+    @GET("auth/get_order_history.php")
     suspend fun getOrderHistory(
         @Query("user_id") userId: Int
     ): OrderHistoryResponse
 }
->>>>>>> cb342957ce8dc201ad23364afa3f3cd981701307
+

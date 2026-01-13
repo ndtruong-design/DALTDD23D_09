@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.appbandienthoai.InputSection
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
@@ -33,8 +34,9 @@ fun LoginScreen(
     api: ApiService,
     onRegisterClick: () -> Unit,
     onForgotPasswordClick: () -> Unit,
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: (String) -> Unit
 ) {
+
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var rememberMe by remember { mutableStateOf(false) }
@@ -152,7 +154,7 @@ fun LoginScreen(
                     loading = true
                     try {
                         val response = api.login(LoginRequest(username, password))
-                        if (response.success) {val userId = response.MaKhachHang?:-1
+                        if (response.success) {val userId = response.MaKhachHang?:-1;val type=response.accountType?:""
                             response.token?.let {
                                 if (rememberMe) {
                                     saveUsername(context.applicationContext, username)
@@ -163,7 +165,7 @@ fun LoginScreen(
                                 saveToken(context.applicationContext, token)
                                 saveRememberMe(context.applicationContext, rememberMe)
                                 saveUserId(context.applicationContext, userId)
-                                onLoginSuccess()
+                                onLoginSuccess(type)
 
                             }
                         } else {

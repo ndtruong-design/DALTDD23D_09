@@ -3,12 +3,6 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Content-Type: application/json; charset=UTF-8');
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(response_code: 200);
-    exit();
-}
-require_once '../../auth/middleware.php';
-
 require_once '../../config/db_connect.php';
 
 try {
@@ -17,7 +11,7 @@ try {
     
     $sql = "SELECT 
                 dh.MaDonHang, 
-                dh.NgayDat, 
+                dh.NgayDatHang, 
                 dh.TongTien, 
                 dh.TrangThai,
                 kh.HoTen, 
@@ -27,7 +21,7 @@ try {
     if ($status !== null) {
         $sql .= " WHERE dh.TrangThai = :status";
     }
-    $sql .= " ORDER BY dh.NgayDat DESC";
+    $sql .= " ORDER BY dh.NgayDatHang DESC";
     $stmt = $conn->prepare($sql);
     if ($status !== null) {
         $stmt->bindParam(':status', $status, PDO::PARAM_INT);
@@ -55,7 +49,7 @@ try {
         
         $orders[] = array(
             'MaDonHang' => $row['MaDonHang'],
-            'NgayDat' => $row['NgayDat'],
+            'NgayDatHang' => $row['NgayDatHang'],
             'TongTien' => floatval($row['TongTien']),
             'TrangThai' => intval($row['TrangThai']),
             'TrangThaiText' => $statusText,

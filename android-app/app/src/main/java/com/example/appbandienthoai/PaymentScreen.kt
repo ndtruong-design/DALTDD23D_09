@@ -36,7 +36,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun PaymentScreen(totalAmount: Long,
-                  api: ApiService,navController: NavHostController,
+                  api: ApiService,
+                  navController: NavHostController,
                   cartViewModel: CartViewModel
 
 ) {
@@ -127,7 +128,7 @@ fun PaymentScreen(totalAmount: Long,
                             try {
                                 val response = api.checkPromoCode(couponCode, totalAmount)
                                 if (response.success) {
-                                    discountRate = response.tiLeGiam ?: 0f
+                                    discountRate = response.TiLeGiam ?: 0f
                                     isCouponApplied = true
                                     promoMessage = response.message ?: "Áp dụng thành công"
                                 } else {

@@ -1,7 +1,7 @@
 <?php
 header("Content-Type: application/json; charset=UTF-8");
 require_once "../config/db_connect.php"; 
-$code = $_GET['code'] ?? '';
+$code = $_GET['MaKhuyenMai'] ?? '';
 $totalOrder = isset($_GET['total']) ? (float)$_GET['total'] : 0; 
 
 if (empty($code)) {

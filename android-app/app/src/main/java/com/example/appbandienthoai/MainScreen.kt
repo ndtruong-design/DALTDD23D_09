@@ -1,12 +1,14 @@
 package com.example.appbandienthoai
-
 import android.net.Uri
 import android.util.Log
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -144,11 +146,11 @@ fun MainScreen(navController: NavHostController) {
             item {
                 if (adsList.isNotEmpty()) {
                     val pagerState =
-                        androidx.compose.foundation.pager.rememberPagerState { adsList.size }
+                        rememberPagerState { adsList.size }
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                        androidx.compose.foundation.pager.HorizontalPager(
+                        HorizontalPager(
                             state = pagerState,
                             modifier = Modifier
                                 .fillMaxWidth()

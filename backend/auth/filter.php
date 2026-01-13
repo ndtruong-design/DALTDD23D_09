@@ -11,16 +11,14 @@ SELECT
     sp.MaSanPham,
     sp.TenSanPham,
     sp.Hang,
+    ct.MaChiTietSP, -- Nên lấy thêm ID này để xử lý đặt hàng
     ct.MaMau,
     ct.BoNho,
     ct.Gia,
     ha.DuongLinkAnh
 FROM chitietsanpham ct
-JOIN sanpham sp 
-    ON sp.MaSanPham = ct.MaSanPham
-LEFT JOIN hinhanh ha 
-    ON ha.MaSanPham = sp.MaSanPham
-    AND ha.LaAnhDaiDien = 1
+JOIN sanpham sp ON sp.MaSanPham = ct.MaSanPham
+LEFT JOIN hinhanh ha ON ha.MaChiTietSP = ct.MaChiTietSP AND ha.LaAnhDaiDien = 1
 WHERE 1=1
 ";
 

@@ -120,7 +120,7 @@ fun ForgotPasswordScreen(
                         },
                         modifier = Modifier.fillMaxWidth().height(50.dp)
                     ) {
-                        Text(if (loading) "Đang xử lý..." else "Gửi xác nhận")
+                        Text("Kieeerm tra")
                     }
                 }
 

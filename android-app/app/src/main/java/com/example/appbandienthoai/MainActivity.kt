@@ -4,17 +4,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
-<<<<<<< HEAD
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-=======
->>>>>>> cb342957ce8dc201ad23364afa3f3cd981701307
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-
 import com.example.appbandienthoai.ui.theme.AppBanDienThoaiTheme
 
 class MainActivity : ComponentActivity() {
@@ -43,7 +39,7 @@ fun AppNavigation(cartViewModel: CartViewModel) {
         navController = navController,
 
 
-        startDestination = "login" // ĐỔI TỪ "login" THÀNH "profile"
+        startDestination = "login"
 
     ) {
         composable("splash") { SplashScreen(navController) }
@@ -53,11 +49,18 @@ fun AppNavigation(cartViewModel: CartViewModel) {
                 api = RetrofitClient.api,
                 onRegisterClick = { navController.navigate("register") },
                 onForgotPasswordClick = { navController.navigate("forgot") },
-                onLoginSuccess = {
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
+                onLoginSuccess = { type ->
+                    if (type == "admin") {
+                        navController.navigate("adminOrderlistscreen") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate("home") {
+                            popUpTo("login") { inclusive = true }
+                        }
                     }
                 }
+
             )
         }
 
@@ -100,29 +103,23 @@ fun AppNavigation(cartViewModel: CartViewModel) {
                 brands = brands
             )
         }
-<<<<<<< HEAD
+
         composable(
                 route = "payment/{totalAmount}",
         arguments = listOf(navArgument("totalAmount") { type = NavType.IntType })
         ) { backStackEntry ->
         val totalAmount = backStackEntry.arguments?.getInt("totalAmount") ?: 0
 
-        PaymentScreen(
+     PaymentScreen(
             totalAmount = totalAmount.toLong(),
             api = RetrofitClient.api,
             navController = navController,
             cartViewModel = cartViewModel
         )
     }
-//        composable(route="payment")
-//        {
-//            PaymentScreen(onPlaceOrder = {navController.popBackStack()})
-//        }
-=======
 
-        composable(route="payment") {
-            PaymentScreen(onPlaceOrder = {navController.popBackStack()})
-        }
+
+
         composable(
             route = "detail/{MaSanPham}/{BoNho}",
             arguments = listOf(
@@ -131,12 +128,11 @@ fun AppNavigation(cartViewModel: CartViewModel) {
                 nullable=true}
             )
         ) { backStackEntry ->
-            // Lấy giá trị từ arguments
+
             val maSanPham = backStackEntry.arguments?.getInt("MaSanPham") ?: 0
             val boNho=backStackEntry.arguments?.getString("BoNho")?:""
->>>>>>> cb342957ce8dc201ad23364afa3f3cd981701307
 
-            // Truyền cả hai vào ProductDetailScreen
+
             ProductDetailScreen(
                 maSanPham = maSanPham,
                 boNho=boNho,
@@ -144,18 +140,35 @@ fun AppNavigation(cartViewModel: CartViewModel) {
             )
         }
 
-        // THÊM ROUTE PROFILE
+
         composable("profile") {
             ProfileScreen(
-                userId = 1, // Thay số 1 bằng ID thật từ login
+                userId = 1,
                 api = RetrofitClient.api,
                 onBack = { navController.popBackStack() }
             )
         }
+    composable("adminOrderdetailscreen/{MaDonHang}",
+            arguments = listOf(navArgument("MaDonHang"){type = NavType.IntType }))
+    { backStackEntry ->
+                val orderId = backStackEntry.arguments?.getInt("MaDonHang") ?: 0
+        AdminOrderDetailScreen(orderId =orderId ,
+            api =RetrofitClient.api,
+            onBack= {navController.popBackStack()}
+        )
+    }
+        composable("adminOrderlistscreen")
+        {
+            AdminOrderListScreen(
+                navController= navController,
+                api =RetrofitClient.api,
+
+            )
+        }
+
 
         composable("don_hang") {
-            // LƯU Ý: Ở đây tôi đang hardcode userId = 1 giống như ProfileScreen của bạn.
-            // Thực tế bạn nên lấy userId từ DataStore/Session sau khi login.
+
             OrderHistoryScreen(
                 api = RetrofitClient.api,
                 userId = 1,

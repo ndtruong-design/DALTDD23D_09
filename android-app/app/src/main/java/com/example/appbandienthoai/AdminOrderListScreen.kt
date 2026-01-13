@@ -38,6 +38,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.appbandienthoai.OrderItemCard
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminOrderListScreen(
@@ -45,7 +47,7 @@ fun AdminOrderListScreen(
     api: ApiService
 ){
     var selectedTab by remember { mutableStateOf(0) }
-    var orders by remember { mutableStateOf<List<Order>>(emptyList()) }
+    var orders by remember { mutableStateOf<List<OrderAdmin>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
@@ -154,7 +156,7 @@ fun AdminOrderListScreen(
                             OrderItemCard(
                                 order = order,
                                 onClick = {
-                                    navController.navigate("admin_order_detail/${order.MaDonHang}")
+                                    navController.navigate("adminOrderdetailscreen/${order.MaDonHang}")
                                 }
                             )
                         }
@@ -167,7 +169,7 @@ fun AdminOrderListScreen(
 }
 @Composable
 fun OrderItemCard(
-    order: Order,
+    order: OrderAdmin,
     onClick: () -> Unit
 ) {
     Card(
