@@ -17,6 +17,8 @@ import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,7 +39,7 @@ fun MainScreen(navController: NavHostController) {
     var adsList by remember { mutableStateOf<List<Advertise>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedItemIndex by remember { mutableIntStateOf(0) }
-
+    var searchQuery by remember { mutableStateOf("") }
     val brands = productList.map { it.Hang }.distinct()
 
     LaunchedEffect(Unit) {
@@ -123,8 +125,8 @@ fun MainScreen(navController: NavHostController) {
                 ) {
                     TextField(
                         modifier = Modifier.weight(1f),
-                        value = "",
-                        onValueChange = {},
+                        value = searchQuery,
+                        onValueChange = {searchQuery=it},
                         placeholder = { Text("Tìm kiếm sản phẩm") },
                         leadingIcon = { Icon(Icons.Default.Search, null) },
                         shape = CircleShape,
@@ -192,21 +194,43 @@ fun MainScreen(navController: NavHostController) {
             }
 
             // 📦 Danh sách sản phẩm (2 cột)
-            val rows = productList.chunked(2)
-            items(rows) { row ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    row.forEach {
-                        ProductItem(it, Modifier.weight(1f),
-                            onClick={
-                                navController.navigate("detail/${it.MaSanPham}/${it.BoNho}")
-                            })
+            val filteredList = productList.filter {
+                it.TenSanPham.contains(searchQuery, ignoreCase = true) ||
+                        it.Hang.contains(searchQuery, ignoreCase = true)
+            }
+
+            // Chia danh sách đã lọc thành từng hàng 2 sản phẩm
+            val rows = filteredList.chunked(2)
+
+            if (filteredList.isEmpty() && !isLoading) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Không tìm thấy sản phẩm nào", color = Color.Gray)
                     }
-                    if (row.size == 1) Spacer(Modifier.weight(1f))
+                }
+            } else {
+                items(rows) { row ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        row.forEach { product ->
+                            ProductItem(
+                                product,
+                                Modifier.weight(1f),
+                                onClick = {
+                                    navController.navigate("detail/${product.MaSanPham}/${product.BoNho}")
+                                }
+                            )
+                        }
+                        // Nếu hàng chỉ có 1 sản phẩm, thêm Spacer để căn chỉnh
+                        if (row.size == 1) Spacer(Modifier.weight(1f))
+                    }
                 }
             }
 

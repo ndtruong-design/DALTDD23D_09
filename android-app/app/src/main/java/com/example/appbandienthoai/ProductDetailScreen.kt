@@ -20,10 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,6 +41,9 @@ fun ProductDetailScreen(
     var errorMsg by remember { mutableStateOf<String?>(null) }
     var selectedMemory by remember { mutableStateOf(boNho) }
     val memoryOptions = listOf("256GB", "512GB")
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var selectedColorId by remember { mutableStateOf("") }
 
@@ -49,8 +54,8 @@ fun ProductDetailScreen(
             errorMsg = null
             // Lấy chi tiết variant dựa trên Sản phẩm + Bộ nhớ + Màu sắc
             val response = RetrofitClient.api.getProductDetail(
-                maSanPham, 
-                selectedMemory, 
+                maSanPham,
+                selectedMemory,
                 selectedColorId.ifEmpty { null }
             )
             product = response
@@ -59,7 +64,7 @@ fun ProductDetailScreen(
                 try {
                     val colors = RetrofitClient.api.getColor(response.MaSanPham, response.BoNho)
                     colorList = colors.filter { !it.MaHex.isNullOrEmpty() }
-                    
+
                     if (selectedColorId.isEmpty() && colorList.isNotEmpty()) {
                         selectedColorId = response.MaMau.toString()
                     }
@@ -99,7 +104,8 @@ fun ProductDetailScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             if (isLoading && product == null) {
@@ -167,8 +173,8 @@ fun ProductDetailScreen(
                         memoryOptions.forEach { mem ->
                             FilterChip(
                                 selected = selectedMemory == mem,
-                                onClick = { 
-                                    selectedMemory = mem 
+                                onClick = {
+                                    selectedMemory = mem
                                     selectedColorId = "" // Reset để load lại theo cấu hình mới
                                 },
                                 label = { Text(mem) },
@@ -186,7 +192,7 @@ fun ProductDetailScreen(
                         ) {
                             items(colorList) { colorPhone ->
                                 val isSelected = selectedColorId == colorPhone.MaMau.toString()
-                                
+
                                 val hex = colorPhone.MaHex ?: return@items
                                 val hexColor = if (hex.startsWith("#")) hex else "#$hex"
                                 val composeColor = try {
@@ -231,7 +237,34 @@ fun ProductDetailScreen(
 
                     // 6. Nút mua hàng
                     Button(
-                        onClick = { /* Logic thêm vào giỏ hàng */ },
+                        onClick = {
+                            coroutineScope.launch {
+                                try {
+                                    val userId = getUserId(context)
+                                    if (userId != -1 && product != null) {
+                                        // Sử dụng AddCartRequest để gửi dữ liệu qua @Body
+                                        val response = RetrofitClient.api.addCart(
+                                            AddCartRequest(
+                                                MaKhachHang = userId,
+                                                MaSanPham = product!!.MaSanPham,
+                                                MaMau = selectedColorId.toInt()
+
+                                            )
+                                        )
+                                        if (response.success) {
+                                            snackbarHostState.showSnackbar("Đã thêm vào giỏ hàng!")
+                                        } else {
+                                            snackbarHostState.showSnackbar(response.message ?: "Thêm thất bại")
+                                        }
+                                    } else {
+                                        snackbarHostState.showSnackbar("Vui lòng đăng nhập để mua hàng")
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e("ADD_CART_ERROR", e.message ?: "Lỗi không xác định")
+                                    snackbarHostState.showSnackbar("Lỗi kết nối server")
+                                }
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {

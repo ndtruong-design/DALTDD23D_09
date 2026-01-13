@@ -17,8 +17,10 @@ if (!$maSanPham || !$maMau) {
 try {
     // Get product info
     $stmt = $conn->prepare("
-        SELECT ha.* FROM HinhAnh ha, SanPham sp, ChiTietSanPham ct
-        WHERE sp.MaSanPham = :maSanPham AND laAnhDaiDien=0 AND ct.MaMau = :maMau AND sp.MaSanPham = ct.MaSanPham AND ct.MaChiTietSP = ha.MaChiTietSP
+        SELECT h.*
+            FROM HinhAnh h
+            JOIN ChiTietSanPham ct ON h.MaChiTietSP = ct.MaChiTietSP
+            WHERE ct.MaSanPham = :maSanPham AND ct.MaMau = :maMau AND h.LaAnhDaiDien = 0
     ");
     $stmt->execute([':maSanPham' => $maSanPham, ':maMau' => $maMau]);
     $image = $stmt->fetchAll(PDO::FETCH_ASSOC);

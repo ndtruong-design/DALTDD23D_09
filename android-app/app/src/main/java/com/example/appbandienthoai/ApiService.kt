@@ -174,7 +174,17 @@ data class ProfileResponse(
     val user: UserProfile? = null,
     val message: String? = null
 )
+data class AddCartResponse(
+    val success: Boolean,
+    val message: String? =null
+)
 
+data class AddCartRequest(
+    val MaKhachHang: Int,
+    val MaSanPham: Int,
+    val MaMau: Int
+
+)
 
 data class CartItem(
 
@@ -318,7 +328,6 @@ interface ApiService {
     ): FilterResponse
 
 
-
     @GET("auth/card/get.php")
     suspend fun getCard(
         @Query("MaKhachHang") MaKhachHang: Int
@@ -340,8 +349,9 @@ interface ApiService {
     @GET("auth/get_color.php")
     suspend fun getColor(
         @Query("MaSanPham") MaSanPham: Int,
-        @Query("BoNho")BoNho: String
+        @Query("BoNho") BoNho: String
     ): List<ColorPhone>
+
     @GET("admin/orders/get_orders.php")
     suspend fun getAdminOrders(
         @Query("status") status: Int? = null
@@ -361,10 +371,12 @@ interface ApiService {
     suspend fun getProfile(
         @Query("MaKhachHang") userId: Int
     ): ProfileResponse
+
     @POST("auth/update_profile.php")
     suspend fun updateProfile(
         @Body request: UpdateProfileRequest
     ): UpdateProfileResponse
+
     @POST("auth/card/update.php")
 
     suspend fun updateQuantity(
@@ -372,13 +384,10 @@ interface ApiService {
     ): cartResponse<Unit>
 
 
-
-
     @POST("auth/card/remove.php")
     suspend fun removeItem(
         @Body body: RemoveCartRequest
     ): cartResponse<Unit>
-
 
 
     @POST("auth/card/check.php")
@@ -391,22 +400,33 @@ interface ApiService {
     suspend fun checkPromoCode(
         @Query("MaKhuyenMai") MaKhuyenMai: String?,
         @Query("total") total: Long
-    ):PromoResponse
+    ): PromoResponse
+
     @POST("auth/place_order.php")
     suspend fun placeOrder(
         @Body request: PlaceOrderRequest
     ): PlaceOrderResponse
+
     @GET("auth/get_user_info.php")
     suspend fun getUserInfo(
         @Query("user_id") userId: Int
     ): cartResponse<PlaceOrderRequest>
 
 
-
-
     @GET("auth/get_order_history.php")
     suspend fun getOrderHistory(
         @Query("user_id") userId: Int
     ): OrderHistoryResponse
-}
 
+
+    @POST("auth/add_to_cart.php")
+    suspend fun addCart(
+        @Body request: AddCartRequest
+    ): AddCartResponse
+
+    // Thêm vào interface ApiService trong file ApiService.kt
+    @GET("auth/search_products.php")
+    suspend fun searchProducts(
+        @Query("query") query: String
+    ): FilterResponse
+}
