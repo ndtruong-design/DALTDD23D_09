@@ -1,4 +1,4 @@
-package com.example.appbandienthoai
+package com.example.appbandienthoai.components
 
 
 import androidx.compose.material.icons.Icons

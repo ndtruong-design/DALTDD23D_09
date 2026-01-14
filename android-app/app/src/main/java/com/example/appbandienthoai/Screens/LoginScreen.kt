@@ -1,4 +1,4 @@
-package com.example.appbandienthoai
+package com.example.appbandienthoai.Screens
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -25,7 +25,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.appbandienthoai.InputSection
+import com.example.appbandienthoai.R
+import com.example.appbandienthoai.data.api.ApiService
+import com.example.appbandienthoai.data.model.LoginRequest
+import com.example.appbandienthoai.utils.getPassword
+import com.example.appbandienthoai.utils.getRememberMe
+import com.example.appbandienthoai.utils.getToken
+import com.example.appbandienthoai.utils.getUsername
+import com.example.appbandienthoai.utils.savePassword
+import com.example.appbandienthoai.utils.saveRememberMe
+import com.example.appbandienthoai.utils.saveToken
+import com.example.appbandienthoai.utils.saveUserId
+import com.example.appbandienthoai.utils.saveUsername
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
@@ -48,7 +59,7 @@ fun LoginScreen(
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         val savedUsername = getUsername(context)
-        val savepassword=getPassword(context)
+        val savepassword= getPassword(context)
         if (!savedUsername.isNullOrEmpty()) {
             username = savedUsername
         }

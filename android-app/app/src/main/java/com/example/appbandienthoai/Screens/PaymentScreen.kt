@@ -1,5 +1,6 @@
-package com.example.appbandienthoai
+package com.example.appbandienthoai.Screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +32,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.appbandienthoai.components.CartViewModel
+import com.example.appbandienthoai.data.api.ApiService
+import com.example.appbandienthoai.data.model.CheckoutItem
+import com.example.appbandienthoai.data.model.PlaceOrderRequest
+import com.example.appbandienthoai.data.model.PlaceOrderResponse
+import com.example.appbandienthoai.utils.getUserId
 import kotlinx.coroutines.launch
 
 
@@ -199,7 +206,7 @@ fun PaymentScreen(totalAmount: Long,
                                 HoTen = name,
                                 SoDienThoai = phone,
                                 DiaChi = address,
-                               MaPTTT = paymentMethod,
+                                MaPTTT = paymentMethod,
                                 MaKhuyenMai = if (isCouponApplied) couponCode else null,
                                 TongTien = total,
                                 items = selectedItems
@@ -214,7 +221,7 @@ fun PaymentScreen(totalAmount: Long,
                                 }
                             }
                         } catch (e: Exception) {
-                            android.util.Log.e("PAYMENT_DEBUG", "Full Error: ", e)
+                            Log.e("PAYMENT_DEBUG", "Full Error: ", e)
                             Toast.makeText(context, "Lỗi: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     }

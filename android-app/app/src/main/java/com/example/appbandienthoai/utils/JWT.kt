@@ -1,4 +1,4 @@
-package com.example.appbandienthoai
+package com.example.appbandienthoai.utils
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit

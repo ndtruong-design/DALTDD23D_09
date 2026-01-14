@@ -11,6 +11,21 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.appbandienthoai.Screens.AdminOrderDetailScreen
+import com.example.appbandienthoai.Screens.AdminOrderListScreen
+import com.example.appbandienthoai.Screens.CartScreen
+import com.example.appbandienthoai.Screens.FilterScreen
+import com.example.appbandienthoai.Screens.ForgotPasswordScreen
+import com.example.appbandienthoai.Screens.LoginScreen
+import com.example.appbandienthoai.Screens.MainScreen
+import com.example.appbandienthoai.Screens.OrderHistoryScreen
+import com.example.appbandienthoai.Screens.PaymentScreen
+import com.example.appbandienthoai.Screens.ProductDetailScreen
+import com.example.appbandienthoai.Screens.ProfileScreen
+import com.example.appbandienthoai.Screens.RegisterScreen
+import com.example.appbandienthoai.Screens.SplashScreen
+import com.example.appbandienthoai.components.CartViewModel
+import com.example.appbandienthoai.data.api.RetrofitClient
 import com.example.appbandienthoai.ui.theme.AppBanDienThoaiTheme
 
 class MainActivity : ComponentActivity() {
@@ -110,12 +125,12 @@ fun AppNavigation(cartViewModel: CartViewModel) {
         ) { backStackEntry ->
         val totalAmount = backStackEntry.arguments?.getInt("totalAmount") ?: 0
 
-     PaymentScreen(
-            totalAmount = totalAmount.toLong(),
-            api = RetrofitClient.api,
-            navController = navController,
-            cartViewModel = cartViewModel
-        )
+            PaymentScreen(
+                totalAmount = totalAmount.toLong(),
+                api = RetrofitClient.api,
+                navController = navController,
+                cartViewModel = cartViewModel
+            )
     }
 
 
@@ -135,7 +150,7 @@ fun AppNavigation(cartViewModel: CartViewModel) {
 
             ProductDetailScreen(
                 maSanPham = maSanPham,
-                boNho=boNho,
+                boNho = boNho,
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -152,18 +167,19 @@ fun AppNavigation(cartViewModel: CartViewModel) {
             arguments = listOf(navArgument("MaDonHang"){type = NavType.IntType }))
     { backStackEntry ->
                 val orderId = backStackEntry.arguments?.getInt("MaDonHang") ?: 0
-        AdminOrderDetailScreen(orderId =orderId ,
-            api =RetrofitClient.api,
-            onBack= {navController.popBackStack()}
+        AdminOrderDetailScreen(
+            orderId = orderId,
+            api = RetrofitClient.api,
+            onBack = { navController.popBackStack() }
         )
     }
         composable("adminOrderlistscreen")
         {
             AdminOrderListScreen(
-                navController= navController,
-                api =RetrofitClient.api,
+                navController = navController,
+                api = RetrofitClient.api,
 
-            )
+                )
         }
 
 

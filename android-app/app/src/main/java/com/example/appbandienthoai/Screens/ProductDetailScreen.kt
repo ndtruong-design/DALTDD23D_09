@@ -1,4 +1,4 @@
-package com.example.appbandienthoai
+package com.example.appbandienthoai.Screens
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -25,6 +25,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.appbandienthoai.data.model.AddCartRequest
+import com.example.appbandienthoai.data.model.ColorPhone
+import com.example.appbandienthoai.data.model.ImageDetail
+import com.example.appbandienthoai.data.model.ProductDetail
+import com.example.appbandienthoai.data.api.RetrofitClient
+import com.example.appbandienthoai.utils.getUserId
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

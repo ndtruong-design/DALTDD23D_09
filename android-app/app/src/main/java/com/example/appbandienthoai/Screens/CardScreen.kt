@@ -1,8 +1,6 @@
-package com.example.appbandienthoai
+package com.example.appbandienthoai.Screens
 
-import android.R.attr.checked
-import android.util.Log
-import androidx.compose.foundation.clickable
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -25,6 +23,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.example.appbandienthoai.components.CartViewModel
+import com.example.appbandienthoai.data.model.CartItemUI
+import com.example.appbandienthoai.utils.getUserId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -106,11 +107,11 @@ fun CartScreen(
                         cartViewModel.processCheckout(
                             onSuccess = {
 
-                                android.widget.Toast.makeText(context, "Đã chọn hàng cần mua", android.widget.Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Đã chọn hàng cần mua", Toast.LENGTH_SHORT).show()
                                 navController.navigate("payment/$total")
                             },
                             onError = { message ->
-                                android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                             }
                         )
                     }

@@ -1,4 +1,4 @@
-package com.example.appbandienthoai
+package com.example.appbandienthoai.data.api
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

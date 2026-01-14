@@ -1,4 +1,4 @@
-package com.example.appbandienthoai
+package com.example.appbandienthoai.Screens
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -24,6 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.appbandienthoai.data.api.ApiService
+import com.example.appbandienthoai.data.model.OrderHistoryItem
+import com.example.appbandienthoai.data.model.OrderHistoryProduct
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,7 +39,6 @@ fun OrderHistoryScreen(
     var orders by remember { mutableStateOf<List<OrderHistoryItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // Gọi API khi màn hình được tạo
     LaunchedEffect(Unit) {
         try {
             val response = api.getOrderHistory(userId)
@@ -67,10 +69,7 @@ fun OrderHistoryScreen(
                 CircularProgressIndicator()
             }
         } else {
-            // Logic chia danh sách đơn hàng theo trạng thái
-            // 0: Chờ duyệt, 1: Đang giao -> Tab Đơn hàng
             val activeOrders = orders.filter { it.statusCode == 0 || it.statusCode == 1 }
-            // 2: Thành công, 3: Hủy -> Tab Lịch sử
             val historyOrders = orders.filter { it.statusCode == 2 || it.statusCode == 3 }
 
             Column(modifier = Modifier.padding(padding)) {
@@ -90,7 +89,6 @@ fun OrderTabContent(
     val coroutineScope = rememberCoroutineScope()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // --- Tab Row ---
         TabRow(
             selectedTabIndex = pagerState.currentPage,
             containerColor = Color(0xFF6A1B9A),
@@ -120,12 +118,11 @@ fun OrderTabContent(
             }
         }
 
-        // --- Nội dung từng Tab (Pager) ---
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F5F5)) // Màu nền xám nhẹ
+                .background(Color(0xFFF5F5F5))
         ) { page ->
             val currentList = if (page == 0) activeOrders else historyOrders
 
@@ -151,8 +148,6 @@ fun OrderTabContent(
     }
 }
 
-// --- Giữ nguyên các Component con như cũ ---
-
 @Composable
 fun OrderItemCard(order: OrderHistoryItem) {
     Card(
@@ -162,7 +157,6 @@ fun OrderItemCard(order: OrderHistoryItem) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // --- Header: Mã đơn + Trạng thái ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -182,8 +176,7 @@ fun OrderItemCard(order: OrderHistoryItem) {
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
-
-            // Hiển thị ngày dự kiến nếu có
+            
             order.dateExpected?.let {
                 Text(
                     text = "Dự kiến giao: $it",
@@ -194,7 +187,6 @@ fun OrderItemCard(order: OrderHistoryItem) {
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
-            // --- List sản phẩm ---
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 order.items.forEach { product ->
                     ProductRowItem(product)
@@ -203,7 +195,6 @@ fun OrderItemCard(order: OrderHistoryItem) {
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
-            // --- Thông tin bổ sung: Địa chỉ & PTTT ---
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Địa chỉ: ${order.address}",
@@ -220,7 +211,6 @@ fun OrderItemCard(order: OrderHistoryItem) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // --- Footer: Tổng tiền ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -295,10 +285,10 @@ fun ProductRowItem(product: OrderHistoryProduct) {
 @Composable
 fun StatusChip(statusText: String, statusCode: Int) {
     val (bgColor, textColor) = when (statusCode) {
-        0 -> Color(0xFFFFF3E0) to Color(0xFFEF6C00) // Chờ duyệt: Cam
-        1 -> Color(0xFFE3F2FD) to Color(0xFF1565C0) // Đang giao: Xanh dương
-        2 -> Color(0xFFE8F5E9) to Color(0xFF2E7D32) // Thành công: Xanh lá
-        3 -> Color(0xFFFFEBEE) to Color(0xFFC62828) // Hủy: Đỏ
+        0 -> Color(0xFFFFF3E0) to Color(0xFFEF6C00)
+        1 -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
+        2 -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+        3 -> Color(0xFFFFEBEE) to Color(0xFFC62828)
         else -> Color.LightGray to Color.Black
     }
 

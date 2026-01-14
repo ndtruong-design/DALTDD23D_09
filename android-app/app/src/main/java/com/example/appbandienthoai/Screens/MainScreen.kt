@@ -1,5 +1,4 @@
-package com.example.appbandienthoai
-import android.net.Uri
+package com.example.appbandienthoai.Screens
 import android.util.Log
 
 import androidx.compose.foundation.background
@@ -25,11 +24,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.example.appbandienthoai.components.bottomNavItems
+import com.example.appbandienthoai.data.api.RetrofitClient
+import com.example.appbandienthoai.data.model.Advertise
+import com.example.appbandienthoai.data.model.Product
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -251,7 +254,7 @@ fun MainScreen(navController: NavHostController) {
 }
 
 @Composable
-fun ProductItem(product: Product, modifier: Modifier = Modifier,onClick:()-> Unit) {
+fun ProductItem(product: Product, modifier: Modifier = Modifier, onClick:()-> Unit) {
     Card(
         modifier = modifier.clickable {onClick()},
         shape = RoundedCornerShape(12.dp),

@@ -1,4 +1,4 @@
-package com.example.appbandienthoai
+package com.example.appbandienthoai.Screens
 
 import android.util.Log
 import androidx. compose.foundation.background
@@ -21,6 +21,9 @@ import androidx.compose. ui.text.font.FontWeight
 import androidx.compose.ui. unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.appbandienthoai.data.api.ApiService
+import com.example.appbandienthoai.data.model.UpdateProfileRequest
+import com.example.appbandienthoai.data.model.UserProfile
 import kotlinx.coroutines. launch
 
 @OptIn(ExperimentalMaterial3Api::class)

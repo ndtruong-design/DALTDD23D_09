@@ -1,10 +1,6 @@
-package com.example.appbandienthoai
+package com.example.appbandienthoai.data.model
 
 import com.google.gson.annotations.SerializedName
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Query
 
 data class LoginRequest(
     val TenDangNhap: String,
@@ -229,7 +225,7 @@ data class CheckoutItem(
 data class PromoResponse(
     val success: Boolean,
     val message: String?,
-  val TiLeGiam: Float?
+    val TiLeGiam: Float?
 )
 
 data class PlaceOrderRequest(
@@ -301,132 +297,3 @@ data class OrderHistoryProduct(
     @SerializedName("price_formatted") val priceFormatted: String,
     @SerializedName("image") val image: String
 )
-
-
-
-interface ApiService {
-    @POST("auth/login.php")
-    suspend fun login(@Body request: LoginRequest): LoginResponse
-
-    @POST("auth/register.php")
-    suspend fun register(@Body request: RegisterRequest): RegisterResponse
-
-    @POST("auth/forgotpassword.php")
-    suspend fun forgotPassword(@Body request: ForgotPasswordRequest): ForgotPasswordResponse
-
-    @GET("auth/get_ads.php")
-    suspend fun getAds(): List<Advertise>
-
-    @GET("auth/get_products.php")
-    suspend fun getProduct(): List<Product>
-
-    @GET("auth/filter.php")
-    suspend fun filterProducts(
-        @Query("min") min: Int?,
-        @Query("max") max: Int?,
-        @Query("hang") hang: String?
-    ): FilterResponse
-
-
-    @GET("auth/card/get.php")
-    suspend fun getCard(
-        @Query("MaKhachHang") MaKhachHang: Int
-    ): cartResponse<List<CartItem>>
-
-    @GET("auth/get_product_detail.php")
-    suspend fun getProductDetail(
-        @Query("MaSanPham") maSanPham: Int,
-        @Query("BoNho") boNho: String,
-        @Query("MaMau") maMau: String? = null
-    ): ProductDetail
-
-    @GET("auth/get_image_detail.php")
-    suspend fun getImageDetail(
-        @Query("MaSanPham") maSanPham: Int,
-        @Query("MaMau") maMau: String
-    ): List<ImageDetail>
-
-    @GET("auth/get_color.php")
-    suspend fun getColor(
-        @Query("MaSanPham") MaSanPham: Int,
-        @Query("BoNho") BoNho: String
-    ): List<ColorPhone>
-
-    @GET("admin/orders/get_orders.php")
-    suspend fun getAdminOrders(
-        @Query("status") status: Int? = null
-    ): AdminOrdersResponse
-
-    @GET("admin/orders/get_order_detail.php")
-    suspend fun getOrderDetail(
-        @Query("MaDonHang") orderId: Int
-    ): OrderDetailResponse
-
-    @POST("admin/orders/update_status.php")
-    suspend fun updateOrderStatus(
-        @Body request: UpdateStatusRequest
-    ): UpdateStatusResponse
-
-    @GET("auth/get_profile.php")
-    suspend fun getProfile(
-        @Query("MaKhachHang") userId: Int
-    ): ProfileResponse
-
-    @POST("auth/update_profile.php")
-    suspend fun updateProfile(
-        @Body request: UpdateProfileRequest
-    ): UpdateProfileResponse
-
-    @POST("auth/card/update.php")
-
-    suspend fun updateQuantity(
-        @Body body: UpdateQuantityRequest
-    ): cartResponse<Unit>
-
-
-    @POST("auth/card/remove.php")
-    suspend fun removeItem(
-        @Body body: RemoveCartRequest
-    ): cartResponse<Unit>
-
-
-    @POST("auth/card/check.php")
-    suspend fun check(
-        @Body body: CheckoutRequest
-    ): cartResponse<Unit>
-
-
-    @GET("auth/get_khuyen_mai.php")
-    suspend fun checkPromoCode(
-        @Query("MaKhuyenMai") MaKhuyenMai: String?,
-        @Query("total") total: Long
-    ): PromoResponse
-
-    @POST("auth/place_order.php")
-    suspend fun placeOrder(
-        @Body request: PlaceOrderRequest
-    ): PlaceOrderResponse
-
-    @GET("auth/get_user_info.php")
-    suspend fun getUserInfo(
-        @Query("user_id") userId: Int
-    ): cartResponse<PlaceOrderRequest>
-
-
-    @GET("auth/get_order_history.php")
-    suspend fun getOrderHistory(
-        @Query("MaKhachHang") userId: Int
-    ): OrderHistoryResponse
-
-
-    @POST("auth/add_to_cart.php")
-    suspend fun addCart(
-        @Body request: AddCartRequest
-    ): AddCartResponse
-
-    // Thêm vào interface ApiService trong file ApiService.kt
-    @GET("auth/search_products.php")
-    suspend fun searchProducts(
-        @Query("query") query: String
-    ): FilterResponse
-}

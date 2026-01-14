@@ -1,22 +1,25 @@
-package com.example.appbandienthoai
-
+package com.example.appbandienthoai.components
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.appbandienthoai.data.api.ApiService
+import com.example.appbandienthoai.data.model.CartItem
+import com.example.appbandienthoai.data.model.CartItemUI
+import com.example.appbandienthoai.data.model.CheckoutItem
+import com.example.appbandienthoai.data.model.CheckoutRequest
+import com.example.appbandienthoai.data.model.RemoveCartRequest
+import com.example.appbandienthoai.data.model.UpdateQuantityRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
 
 class CartViewModel(private val api: ApiService) : ViewModel() {
     private val _items = MutableStateFlow<List<CartItemUI>>(emptyList())
     val items: StateFlow<List<CartItemUI>> = _items
-
 
     private var currentUserId: Int = -1
 
@@ -43,7 +46,7 @@ class CartViewModel(private val api: ApiService) : ViewModel() {
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e("API_CHECK", "Lỗi Parse dữ liệu: ${e.message}")
+                Log.e("API_CHECK", "Lỗi Parse dữ liệu: ${e.message}")
             }
         }
     }
@@ -52,7 +55,13 @@ class CartViewModel(private val api: ApiService) : ViewModel() {
         if (newQty < 1) return
         viewModelScope.launch {
             try {
-                val res = api.updateQuantity(UpdateQuantityRequest(currentUserId, item.MaChiTietSP, newQty))
+                val res = api.updateQuantity(
+                    UpdateQuantityRequest(
+                        currentUserId,
+                        item.MaChiTietSP,
+                        newQty
+                    )
+                )
                 if (res.success) {
                     loadCart(currentUserId)
                 }
@@ -65,7 +74,6 @@ class CartViewModel(private val api: ApiService) : ViewModel() {
             updateQuantity(it.item, it.item.SoLuong + 1)
         }
     }
-
 
     fun decrease(maChiTietSP: Int) {
         val item = _items.value.find { it.item.MaChiTietSP == maChiTietSP }
@@ -124,6 +132,4 @@ class CartViewModel(private val api: ApiService) : ViewModel() {
             else it
         }
     }
-
-
 }
