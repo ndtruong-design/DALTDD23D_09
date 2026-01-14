@@ -3,83 +3,98 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Content-Type: application/json; charset=UTF-8');
-require_once '../../config/db_connect.php';
 
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(array(
-        'success' => false,
-        'message' => 'Chỉ chấp nhận phương thức POST'
-    ), JSON_UNESCAPED_UNICODE);
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
     exit();
 }
 
+require_once '../../config/db_connect.php';
+
 try {
-   
-    $data = json_decode(file_get_contents("php://input"), true); 
+    $data = json_decode(file_get_contents("php://input"), true);
+    
     if (!isset($data['MaDonHang']) || !isset($data['TrangThai'])) {
         http_response_code(400);
-        echo json_encode(array(
+        echo json_encode([
             'success' => false,
             'message' => 'Thiếu thông tin MaDonHang hoặc TrangThai'
-        ), JSON_UNESCAPED_UNICODE);
+        ], JSON_UNESCAPED_UNICODE);
         exit();
     }
-    $maDonHang = intval($data['MaDonHang']);
-    $trangThai = intval($data['TrangThai']);
-    if (!in_array($trangThai, [0, 1, 2, 3])) {
-        http_response_code(400);
-        echo json_encode(array(
-            'success' => false,
-            'message' => 'Trạng thái không hợp lệ. Chỉ chấp nhận: 0 (Chờ duyệt), 1 (Đang giao), 2 (Đã giao), 3 (Đã hủy)'
-        ), JSON_UNESCAPED_UNICODE);
-        exit();
-    }
-    $checkSql = "SELECT MaDonHang FROM DonHang WHERE MaDonHang = :maDonHang";
-    $checkStmt = $conn->prepare($checkSql);
-    $checkStmt->bindParam(':maDonHang', $maDonHang, PDO::PARAM_INT);
-    $checkStmt->execute();
     
-    if ($checkStmt->rowCount() === 0) {
+    $maDonHang = intval($data['MaDonHang']);
+    $trangThaiMoi = intval($data['TrangThai']);
+    
+    if ($trangThaiMoi < 0 || $trangThaiMoi > 3) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Trạng thái không hợp lệ (0-3)'
+        ], JSON_UNESCAPED_UNICODE);
+        exit();
+    }
+    
+    $checkSql = "SELECT TrangThai FROM DonHang WHERE MaDonHang = ?";
+    $checkStmt = $conn->prepare($checkSql);
+    $checkStmt->execute([$maDonHang]);
+    $order = $checkStmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$order) {
         http_response_code(404);
-        echo json_encode(array(
+        echo json_encode([
             'success' => false,
             'message' => 'Không tìm thấy đơn hàng'
-        ), JSON_UNESCAPED_UNICODE);
+        ], JSON_UNESCAPED_UNICODE);
         exit();
     }
     
-    $updateSql = "UPDATE DonHang 
-                  SET TrangThai = :trangThai, NgayXuLy = NOW() 
-                  WHERE MaDonHang = :maDonHang";
+    $trangThaiCu = intval($order['TrangThai']);
+  
+    $conn->beginTransaction();
     
+  
+    $updateSql = "UPDATE DonHang SET TrangThai = ? WHERE MaDonHang = ?";
     $stmt = $conn->prepare($updateSql);
-    $stmt->bindParam(':trangThai', $trangThai, PDO::PARAM_INT);
-    $stmt->bindParam(':maDonHang', $maDonHang, PDO::PARAM_INT);
+    $stmt->execute([$trangThaiMoi, $maDonHang]);
     
-    if ($stmt->execute()) {
-        $statusText = '';
-        switch ($trangThai) {
-            case 0: $statusText = 'Chờ duyệt'; break;
-            case 1: $statusText = 'Đang giao'; break;
-            case 2: $statusText = 'Đã giao'; break;
-            case 3: $statusText = 'Đã hủy'; break;
-        }
+   
+    if ($trangThaiMoi == 3 && $trangThaiCu != 3) {
+
+        $getItemsSql = "SELECT MaChiTietSP, SoLuong FROM ChiTietDonHang WHERE MaDonHang = ?";
+        $getItemsStmt = $conn->prepare($getItemsSql);
+        $getItemsStmt->execute([$maDonHang]);
+        $items = $getItemsStmt->fetchAll(PDO::FETCH_ASSOC);
         
-        echo json_encode(array(
-            'success' => true,
-            'message' => "Cập nhật trạng thái đơn hàng thành công: {$statusText}"
-        ), JSON_UNESCAPED_UNICODE);
-    } else {
-        throw new Exception('Không thể cập nhật trạng thái đơn hàng');
+        $restoreSql = "UPDATE ChiTietSanPham SET SoLuongTon = SoLuongTon + ? WHERE MaChiTietSP = ?";
+        $restoreStmt = $conn->prepare($restoreSql);
+        
+        foreach ($items as $item) {
+            $restoreStmt->execute([$item['SoLuong'], $item['MaChiTietSP']]);
+        }
     }
     
+    $conn->commit();
+    
+    $statusText = '';
+    if ($trangThaiMoi == 0) $statusText = 'Chờ duyệt';
+    elseif ($trangThaiMoi == 1) $statusText = 'Đang giao';
+    elseif ($trangThaiMoi == 2) $statusText = 'Đã giao';
+    elseif ($trangThaiMoi == 3) $statusText = 'Đã hủy';
+    
+    echo json_encode([
+        'success' => true,
+        'message' => "Cập nhật thành công: {$statusText}"
+    ], JSON_UNESCAPED_UNICODE);
+    
 } catch (Exception $e) {
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
     http_response_code(500);
-    echo json_encode(array(
+    echo json_encode([
         'success' => false,
         'message' => 'Lỗi server: ' . $e->getMessage()
-    ), JSON_UNESCAPED_UNICODE);
+    ], JSON_UNESCAPED_UNICODE);
 }
 ?>
