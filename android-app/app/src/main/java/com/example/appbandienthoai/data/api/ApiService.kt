@@ -6,6 +6,8 @@ import com.example.appbandienthoai.data.model.AddCartResponse
 import com.example.appbandienthoai.data.model.AdminOrdersResponse
 import com.example.appbandienthoai.data.model.Advertise
 import com.example.appbandienthoai.data.model.CartItem
+import com.example.appbandienthoai.data.model.ChangePasswordRequest
+import com.example.appbandienthoai.data.model.ChangePasswordResponse
 import com.example.appbandienthoai.data.model.CheckoutRequest
 import com.example.appbandienthoai.data.model.ColorPhone
 import com.example.appbandienthoai.data.model.FilterResponse
@@ -36,7 +38,6 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Query
-
 
 
 
@@ -113,6 +114,11 @@ interface ApiService {
     suspend fun updateProfile(
         @Body request: UpdateProfileRequest
     ): UpdateProfileResponse
+
+    @POST("auth/change_password.php")
+    suspend fun changePassword(
+        @Body request: ChangePasswordRequest
+    ): ChangePasswordResponse
 
     @POST("auth/card/update.php")
 

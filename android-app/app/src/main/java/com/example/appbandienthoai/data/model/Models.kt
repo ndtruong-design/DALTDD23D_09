@@ -268,6 +268,15 @@ data class UpdateProfileResponse(
     val message: String,
     val user: UserProfile? = null
 )
+data class ChangePasswordRequest(
+    val MaKhachHang: Int,
+    val MatKhauCu: String,
+    val MatKhauMoi: String
+)
+data class ChangePasswordResponse(
+    val success: Boolean,
+    val message: String
+)
 
 data class OrderHistoryResponse(
     val success: Boolean,
