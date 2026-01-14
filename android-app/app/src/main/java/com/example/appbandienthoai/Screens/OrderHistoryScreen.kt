@@ -197,10 +197,9 @@ fun OrderItemCard(order: OrderHistoryItem) {
 
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Địa chỉ: ${order.address}",
+                    text = "Thông tin giao hàng: ${order.address}",
                     fontSize = 12.sp,
-                    color = Color.DarkGray,
-                    maxLines = 1
+                    color = Color.DarkGray
                 )
                 Text(
                     text = "Thanh toán: ${order.paymentMethod ?: "N/A"}",
