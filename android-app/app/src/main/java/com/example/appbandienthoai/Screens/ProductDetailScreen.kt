@@ -263,7 +263,6 @@ fun ProductDetailScreen(
                                                 MaKhachHang = userId,
                                                 MaSanPham = product!!.MaSanPham,
                                                 MaMau = selectedColorId.toInt()
-
                                             )
                                         )
                                         if (response.success) {

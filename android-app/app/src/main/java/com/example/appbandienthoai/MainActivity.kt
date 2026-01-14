@@ -3,7 +3,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavType
@@ -14,6 +25,7 @@ import androidx.navigation.navArgument
 import com.example.appbandienthoai.Screens.AdminOrderDetailScreen
 import com.example.appbandienthoai.Screens.AdminOrderListScreen
 import com.example.appbandienthoai.Screens.CartScreen
+import com.example.appbandienthoai.Screens.ChangePasswordScreen
 import com.example.appbandienthoai.Screens.FilterScreen
 import com.example.appbandienthoai.Screens.ForgotPasswordScreen
 import com.example.appbandienthoai.Screens.LoginScreen
@@ -27,12 +39,13 @@ import com.example.appbandienthoai.Screens.SplashScreen
 import com.example.appbandienthoai.components.CartViewModel
 import com.example.appbandienthoai.data.api.RetrofitClient
 import com.example.appbandienthoai.ui.theme.AppBanDienThoaiTheme
+import com.example.appbandienthoai.utils.getUserId
 
 class MainActivity : ComponentActivity() {
     val cartViewModel: CartViewModel by viewModels {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return CartViewModel(RetrofitClient.api) as T
+                return CartViewModel(RetrofitClient.api) as  T
             }
         }
     }
@@ -157,8 +170,37 @@ fun AppNavigation(cartViewModel: CartViewModel) {
 
 
         composable("profile") {
-            ProfileScreen(
-                userId = 1,
+            val context = LocalContext.current
+            var userId by remember { mutableStateOf(-1) }
+
+            LaunchedEffect(Unit) {
+                userId = getUserId(context)
+            }
+
+            if (userId > 0) {
+                ProfileScreen(
+                    userId = userId,
+                    api = RetrofitClient.api,
+                    onBack = { navController.popBackStack() },
+                    navController = navController
+                )
+            } else {
+
+                Box(Modifier.fillMaxSize(), Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
+        composable("change_password") {
+            val context = LocalContext.current
+            var userId by remember { mutableStateOf(-1) }
+
+            LaunchedEffect(Unit) {
+                userId = getUserId(context)
+            }
+
+            ChangePasswordScreen(
+                userId = userId,
                 api = RetrofitClient.api,
                 onBack = { navController.popBackStack() }
             )

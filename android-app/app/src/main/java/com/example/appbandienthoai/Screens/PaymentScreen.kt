@@ -10,11 +10,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -41,6 +50,7 @@ import com.example.appbandienthoai.utils.getUserId
 import kotlinx.coroutines.launch
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaymentScreen(totalAmount: Long,
                   api: ApiService,
@@ -61,7 +71,7 @@ fun PaymentScreen(totalAmount: Long,
 
     val shippingFee = 30000L
     val discountAmount = (totalAmount * (discountRate / 100)).toLong()
-    val total = totalAmount + shippingFee - discountAmount
+    val total = (totalAmount + shippingFee - discountAmount)
 
     val context = LocalContext.current
     val cartItems by cartViewModel.items.collectAsState()
@@ -83,14 +93,33 @@ fun PaymentScreen(totalAmount: Long,
             }
         }
     }
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text("Thanh toán")
+                },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        navController.popBackStack()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Quay lại"
+                        )
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
 
     ) {
-
         item {
             Text("Địa chỉ giao hàng", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             OutlinedTextField(
@@ -148,13 +177,13 @@ fun PaymentScreen(totalAmount: Long,
                         }
                     },
                     modifier = Modifier.padding(start = 8.dp).height(56.dp),
-                    enabled = couponCode.isNotBlank() && !isCouponApplied
+                    enabled = couponCode.isNotBlank() && !isCouponApplied,
                 ) {
                     Text(if (isCouponApplied) "ĐÃ ÁP DỤNG" else "ÁP DỤNG")
                 }
             }
 
-            // HIỂN THỊ THÔNG BÁO TẠI ĐÂY
+
             if (promoMessage.isNotBlank()) {
                 Text(
                     text = promoMessage,
@@ -201,6 +230,7 @@ fun PaymentScreen(totalAmount: Long,
                             val selectedItems = cartItems
                                 .filter { it.isChecked }
                                 .map { CheckoutItem(it.item.MaChiTietSP, it.item.SoLuong) }
+                            Log.d("PAYMENT_DEBUG", "UserId: $userId, Items count: ${selectedItems.size}, Total: $total")
                             val request = PlaceOrderRequest(
                                 MaKhachHang = userId,
                                 HoTen = name,
@@ -215,23 +245,26 @@ fun PaymentScreen(totalAmount: Long,
                             val response: PlaceOrderResponse = api.placeOrder(request)
 
                             if (response.success) {
+
                                 Toast.makeText(context, "Đặt hàng thành công! Mã đơn: ${response.MaDonHang}", Toast.LENGTH_LONG).show()
                                 navController.navigate("home") {
                                     popUpTo("cart") { inclusive = true }
                                 }
                             }
+
                         } catch (e: Exception) {
                             Log.e("PAYMENT_DEBUG", "Full Error: ", e)
                             Toast.makeText(context, "Lỗi: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 },
-                enabled = name.isNotBlank() && phone.isNotBlank() && address.isNotBlank()
+                enabled = name.isNotBlank() && phone.isNotBlank() && address.isNotBlank(),  colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7))
             ) {
-                Text("ĐẶT HÀNG")
+                Text("THANH TOÁN")
             }
         }
     }
+}
 }
 
 fun formatPrice(amount: Long): String {

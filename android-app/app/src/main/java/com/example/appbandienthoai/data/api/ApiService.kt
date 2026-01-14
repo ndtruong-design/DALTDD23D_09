@@ -6,6 +6,8 @@ import com.example.appbandienthoai.data.model.AddCartResponse
 import com.example.appbandienthoai.data.model.AdminOrdersResponse
 import com.example.appbandienthoai.data.model.Advertise
 import com.example.appbandienthoai.data.model.CartItem
+import com.example.appbandienthoai.data.model.ChangePasswordRequest
+import com.example.appbandienthoai.data.model.ChangePasswordResponse
 import com.example.appbandienthoai.data.model.CheckoutRequest
 import com.example.appbandienthoai.data.model.ColorPhone
 import com.example.appbandienthoai.data.model.FilterResponse
@@ -114,6 +116,10 @@ interface ApiService {
         @Body request: UpdateProfileRequest
     ): UpdateProfileResponse
 
+    @POST("auth/change_password.php")
+    suspend fun changePassword(
+        @Body request: ChangePasswordRequest
+    ): ChangePasswordResponse
     @POST("auth/card/update.php")
 
     suspend fun updateQuantity(
@@ -161,7 +167,7 @@ interface ApiService {
         @Body request: AddCartRequest
     ): AddCartResponse
 
-    // Thêm vào interface ApiService trong file ApiService.kt
+
     @GET("auth/search_products.php")
     suspend fun searchProducts(
         @Query("query") query: String

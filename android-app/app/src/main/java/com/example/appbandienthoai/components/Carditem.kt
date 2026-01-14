@@ -24,8 +24,7 @@ class CartViewModel(private val api: ApiService) : ViewModel() {
     private var currentUserId: Int = -1
 
     val total: StateFlow<Int> = items
-        .map { list ->
-            list
+        .map { list -> list
                 .filter { it.isChecked }
                 .sumOf { it.item.Gia * it.item.SoLuong }
         }
@@ -42,7 +41,7 @@ class CartViewModel(private val api: ApiService) : ViewModel() {
                 val res = api.getCard(userId)
                 if (res.success) {
                     _items.value = res.data.orEmpty().map {
-                        CartItemUI(item = it, isChecked = true)
+                        CartItemUI(item = it, isChecked = false)
                     }
                 }
             } catch (e: Exception) {
@@ -71,7 +70,12 @@ class CartViewModel(private val api: ApiService) : ViewModel() {
     fun increase(maChiTietSP: Int) {
         val item = _items.value.find { it.item.MaChiTietSP == maChiTietSP }
         item?.let {
-            updateQuantity(it.item, it.item.SoLuong + 1)
+            val nextQuantity = it.item.SoLuong + 1
+            val maxQuantity = it.item.SoLuongTon
+
+            if (it.item.SoLuong < maxQuantity) {
+                updateQuantity(it.item, nextQuantity.coerceAtMost(maxQuantity))
+            }
         }
     }
 
@@ -113,8 +117,7 @@ class CartViewModel(private val api: ApiService) : ViewModel() {
 
                 val res = api.check(request)
                 if (res.success) {
-
-                    loadCart(currentUserId)
+                 //   loadCart(currentUserId)
                     onSuccess()
                 } else {
                     Log.e("CHECKOUT_DEBUG", "Server message: ${res.message}")

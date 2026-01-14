@@ -13,9 +13,11 @@ if ($user_id <= 0) {
 $sql = "
 SELECT 
     gh.MaChiTietSP, 
+    ct.MaSanPham,
     sp.TenSanPham, 
     ct.Gia, 
-    gh.SoLuong, 
+    gh.SoLuong,
+    ct.SoLuongTon,
     ms.TenMau, 
     ct.BoNho,
     ha.DuongLinkAnh AS HinhAnh
@@ -23,8 +25,11 @@ FROM GioHang gh
 JOIN ChiTietSanPham ct ON gh.MaChiTietSP = ct.MaChiTietSP
 JOIN SanPham sp ON ct.MaSanPham = sp.MaSanPham
 LEFT JOIN MauSac ms ON ct.MaMau = ms.MaMau
-LEFT JOIN HinhAnh ha ON (ha.MaChiTietSP = ct.MaChiTietSP AND ha.LaAnhDaiDien = 1)
+LEFT JOIN HinhAnh ha 
+    ON ha.MaChiTietSP = ct.MaChiTietSP 
+    AND ha.LaAnhDaiDien = 1
 WHERE gh.MaKhachHang = ?
+ORDER BY (ct.Gia * gh.SoLuong) DESC
 ";
 
 try {

@@ -40,7 +40,6 @@ try {
 
     $maChiTietSP = $detail['MaChiTietSP'];
 
-    // 2. Thêm vào giỏ hàng với MaChiTietSP vừa tìm được
     $sql_cart = "INSERT INTO GioHang (MaKhachHang, MaChiTietSP, SoLuong, TrangThai) 
                  VALUES (:maKhachHang, :maChiTietSP, :soLuong, 1) 
                  ON DUPLICATE KEY UPDATE SoLuong = SoLuong + :soLuongUpdate";
@@ -57,7 +56,7 @@ try {
         echo json_encode([
             "success" => true,
             "message" => "Đã thêm sản phẩm màu sắc này vào giỏ hàng",
-            "data" => ["MaChiTietSP" => $maChiTietSP] // Trả về mã chi tiết để App cập nhật nếu cần
+            "data" => ["MaChiTietSP" => $maChiTietSP] 
         ]);
     }
 

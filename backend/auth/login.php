@@ -80,7 +80,7 @@ echo json_encode([
     "success" => true,
     "token" => $token,
     "accountType" => $accountType,
-    "MaKhachHang" => $userId,
+    "MaKhachHang" => $userId,   
     "message" => "Đăng nhập thành công"
 ]);
 ?>

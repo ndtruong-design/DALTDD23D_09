@@ -1,6 +1,7 @@
 package com.example.appbandienthoai.Screens
 
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -32,10 +33,18 @@ import com.example.appbandienthoai.utils.getUserId
 fun CartScreen(
     cartViewModel: CartViewModel,
     navController: NavHostController
-) {
+) { val cartItems by cartViewModel.items.collectAsState()
+
     val context = LocalContext.current
     val total by cartViewModel.total.collectAsState()
-    val cartItems by cartViewModel.items.collectAsState()
+    val canPay by remember(cartItems) {
+        derivedStateOf {
+            val selectedItems = cartItems.filter { it.isChecked }
+            val isAnyChecked = selectedItems.isNotEmpty()
+            val isAllInStock = selectedItems.all { it.item.SoLuong <= it.item.SoLuongTon }
+            isAnyChecked && isAllInStock
+        }
+    }
     LaunchedEffect(Unit) {
         val userId = getUserId(context)
         if (userId != -1) {
@@ -93,8 +102,12 @@ fun CartScreen(
                             },
                             onIncrease = { cartViewModel.increase(item.item.MaChiTietSP) } ,
                                     onDecrease = { cartViewModel.decrease(item.item.MaChiTietSP) },
-                                    onRemove   = { cartViewModel.remove(item.item.MaChiTietSP) }
-
+                                    onRemove   = { cartViewModel.remove(item.item.MaChiTietSP) },
+                            onClickDetail = {
+                                navController.navigate(
+                                    "detail/${item.item.MaSanPham}/${item.item.BoNho}"
+                                )
+                            }
                         )
 
                     }
@@ -103,12 +116,13 @@ fun CartScreen(
 
                 CartSummary(
                     total = total,
+                    enabled = canPay,
                     onCheckout = {
                         cartViewModel.processCheckout(
                             onSuccess = {
 
                                 Toast.makeText(context, "Đã chọn hàng cần mua", Toast.LENGTH_SHORT).show()
-                                navController.navigate("payment/$total")
+                                navController.navigate("payment/${total.toLong()}")
                             },
                             onError = { message ->
                                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
@@ -127,53 +141,67 @@ fun CartItemRow(
     onCheckedChange: () -> Unit,
     onIncrease: () -> Unit,
     onDecrease: () -> Unit,
-    onRemove: () -> Unit
+    onRemove: () -> Unit, onClickDetail: () -> Unit
 ) {
+    val isOutOfStock = item.item.SoLuong > item.item.SoLuongTon
+
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
+        modifier = Modifier.fillMaxWidth().padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(
-            checked = item.isChecked,
-            onCheckedChange = { onCheckedChange() }
-        )
-        AsyncImage(model = item.item.HinhAnh, contentDescription = item.item.TenSanPham, modifier = Modifier
+        Checkbox(checked = item.isChecked, onCheckedChange = { onCheckedChange() })
+
+
+        AsyncImage(
+            model = item.item.HinhAnh,
+            modifier = Modifier
                 .size(80.dp)
-                .clip(RoundedCornerShape(8.dp)), contentScale = ContentScale.Fit)
+                .clip(RoundedCornerShape(8.dp))
+                .clickable { onClickDetail() },
+            contentScale = ContentScale.Fit, contentDescription = ""
+        )
 
         Spacer(Modifier.width(12.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
+
+        Column(modifier = Modifier.weight(1f).clickable {
+            onClickDetail()
+        },) {
             Text(item.item.TenSanPham, fontWeight = FontWeight.Bold, maxLines = 2)
             Text("Màu: ${item.item.TenMau} • ${item.item.BoNho}", fontSize = 12.sp)
             Text("%,d đ".format(item.item.Gia).replace(',', '.'), color = Color(0xFF6A1B9A))
-        }
 
+            if (isOutOfStock) {
+                Text(
+                    text = "Kho không đủ (Còn: ${item.item.SoLuongTon})",
+                    color = Color.Red,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-
                 IconButton(onClick = onDecrease) {
-                    Icon(Icons.Default.Remove, contentDescription = "Giảm")
+                    Icon(Icons.Default.Remove, contentDescription = null)
                 }
 
                 Text(
                     text = item.item.SoLuong.toString(),
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = if (isOutOfStock) Color.Red else Color.Black
                 )
 
-                IconButton(onClick = onIncrease) {
-                    Icon(Icons.Default.Add, contentDescription = "Tăng")
+                IconButton(
+                    onClick = onIncrease,
+                    enabled = item.item.SoLuong < item.item.SoLuongTon // Chặn tăng nếu hết kho
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
                 }
             }
 
             IconButton(onClick = onRemove) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Xóa",
-                    tint = Color.Red
-                )
+                Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red)
             }
         }
     }
@@ -181,10 +209,11 @@ fun CartItemRow(
 @Composable
 fun CartSummary(
     total: Int,
+    enabled: Boolean,
     onCheckout: () -> Unit
 ) {
     Column {
-        Divider()
+     Divider()
 
         Spacer(Modifier.height(8.dp))
 
@@ -204,13 +233,19 @@ fun CartSummary(
         Spacer(Modifier.height(12.dp))
 
         Button(
-            onClick = onCheckout,
+            onClick = onCheckout,enabled = enabled,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
-            colors = ButtonColors(Color(0xFF6A1B9A), contentColor = Color.White, disabledContentColor = Color.Gray, disabledContainerColor = Color.Gray)
+
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF6A1B9A),
+                contentColor = Color.White,
+                disabledContainerColor = Color.Gray,
+                disabledContentColor = Color.LightGray
+            )
         ) {
-            Text("THANH TOÁN")
+            Text("ĐẶT HÀNG")
         }
 
     }

@@ -172,30 +172,30 @@ data class ProfileResponse(
 )
 data class AddCartResponse(
     val success: Boolean,
-    val message: String? =null
-)
+    val message: String? = null,
 
+    )
 data class AddCartRequest(
     val MaKhachHang: Int,
     val MaSanPham: Int,
-    val MaMau: Int
+    val MaMau: Int,
 
 )
 
 data class CartItem(
-
     val MaChiTietSP: Int,
     val MaSanPham: Int,
     val TenSanPham: String,
     val Gia: Int,
     val SoLuong: Int,
+    val SoLuongTon:Int,
     val TenMau: String,
     val BoNho: String,
     val HinhAnh: String
 )
 data class CartItemUI(
     val item: CartItem,
-    val isChecked: Boolean = true
+    val isChecked: Boolean = false
 )
 
 
@@ -240,7 +240,7 @@ data class PlaceOrderRequest(
 )
 data class PlaceOrderResponse(
     val success: Boolean,
-    val message: String,
+    val message: String?,
     val MaDonHang: Int?
 )
 data class OrderAdmin(
@@ -267,6 +267,15 @@ data class UpdateProfileResponse(
     val success: Boolean,
     val message: String,
     val user: UserProfile? = null
+)
+data class ChangePasswordRequest(
+    val MaKhachHang: Int,
+    val MatKhauCu: String,
+    val MatKhauMoi: String
+)
+data class ChangePasswordResponse(
+    val success: Boolean,
+    val message: String
 )
 
 data class OrderHistoryResponse(

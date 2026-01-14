@@ -25,7 +25,13 @@ suspend fun getToken(context: Context): String? {
     return context.dataStore.data.first()[JWT_KEY]
 }
 
-
+suspend fun clearLoginInfo(context: Context) {
+    context.dataStore.edit {
+        it.remove(USERNAME_KEY)
+        it.remove(PASSWORD_KEY)
+        it[REMEMBER_ME_KEY] = false
+    }
+}
 suspend fun savePassword(context: Context, password: String) {
     context.dataStore.edit {
         it[PASSWORD_KEY] = password

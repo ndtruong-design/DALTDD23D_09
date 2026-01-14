@@ -28,6 +28,7 @@ import androidx.navigation.NavController
 import com.example.appbandienthoai.R
 import com.example.appbandienthoai.data.api.ApiService
 import com.example.appbandienthoai.data.model.LoginRequest
+import com.example.appbandienthoai.utils.clearLoginInfo
 import com.example.appbandienthoai.utils.getPassword
 import com.example.appbandienthoai.utils.getRememberMe
 import com.example.appbandienthoai.utils.getToken
@@ -53,7 +54,6 @@ fun LoginScreen(
     var rememberMe by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
-    var token by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     val scope = rememberCoroutineScope()
@@ -165,25 +165,31 @@ fun LoginScreen(
                     loading = true
                     try {
                         val response = api.login(LoginRequest(username, password))
-                        if (response.success) {val userId = response.MaKhachHang?:-1;val type=response.accountType?:""
-                            response.token?.let {
-                                if (rememberMe) {
-                                    saveUsername(context.applicationContext, username)
-                                    savePassword(context.applicationContext, password)
+                        if (response.success) {
+                            val userId = response.MaKhachHang ?: -1
+                            val type = response.accountType ?: ""
 
+                            response.token?.let { tokenFromApi ->
+
+                                if (rememberMe) {
+                                    saveUsername(context, username)
+                                    savePassword(context, password)
+                                    saveRememberMe(context, true)
+                                } else {
+                                    clearLoginInfo(context) // ✅ QUAN TRỌNG
                                 }
 
-                                saveToken(context.applicationContext, token)
-                                saveRememberMe(context.applicationContext, rememberMe)
-                                saveUserId(context.applicationContext, userId)
-                                onLoginSuccess(type)
+                                saveToken(context, tokenFromApi)
+                                saveUserId(context, userId)
 
+                                onLoginSuccess(type)
                             }
-                        } else {
+                        }
+                        else {
                             errorMessage = response.message ?: "Sai tài khoản hoặc mật khẩu"
                         }
                     } catch (e: HttpException) {
-                        errorMessage = "Lỗi server: ${e.code()}"
+                        errorMessage = "Sai tài khoản hoặc mật khẩu"
                         Log.e("LOGIN", e.message())
                     } catch (e: Exception) {
                         errorMessage = "Lỗi hệ thống"
