@@ -415,7 +415,7 @@ interface ApiService {
 
     @GET("auth/get_order_history.php")
     suspend fun getOrderHistory(
-        @Query("user_id") userId: Int
+        @Query("MaKhachHang") userId: Int
     ): OrderHistoryResponse
 
 

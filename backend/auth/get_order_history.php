@@ -1,91 +1,64 @@
 <?php
-// get_order_history.php
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *"); // Cho phép gọi từ mọi nguồn (CORS)
+header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET");
 
-require_once 'db_connect.php';
+require_once "../config/db_connect.php"; 
 
-// Kiểm tra xem có truyền MaKhachHang không
-if (!isset($_GET['user_id'])) {
+// 1. Kiểm tra đầu vào
+if (!isset($_GET['MaKhachHang'])) {
     echo json_encode(["success" => false, "message" => "Thiếu MaKhachHang (user_id)"]);
     exit();
 }
 
-$user_id = intval($_GET['user_id']);
+$user_id = intval($_GET['MaKhachHang']);
 
-// SQL Query: Join các bảng để lấy thông tin đơn hàng + chi tiết sản phẩm + hình ảnh
-// Lưu ý: Logic lấy ảnh đại diện phải khớp với Màu của sản phẩm trong chi tiết đơn hàng
-$sql = "
-    SELECT 
-        dh.MaDonHang, 
-        dh.NgayDatHang, 
-        dh.NgayDuKien,
-        dh.TrangThai AS TrangThaiDonHang, 
-        dh.TrangThaiThanhToan,
-        dh.TongTien, 
-        dh.DiaChiGiaoHang,
-        pt.TenPhuongThuc,
-        
-        -- Thông tin chi tiết sản phẩm trong đơn
-        sp.TenSanPham,
-        ctsp.BoNho,
-        ctsp.RAM,
-        ms.TenMau,
-        ctdh.SoLuong,
-        ctdh.DonGia,
-        
-        -- Lấy ảnh đại diện khớp với màu sắc
-        (SELECT DuongLinkAnh FROM HinhAnh ha 
-         WHERE ha.MaSanPham = sp.MaSanPham 
-         AND ha.MaMau = ctsp.MaMau 
-         AND ha.LaAnhDaiDien = 1 
-         LIMIT 1) AS HinhAnhSanPham
+try {
+    // 2. Câu truy vấn SQL 
+    // Lưu ý: Nếu dùng SQL Server, thay 'LIMIT 1' bằng 'TOP 1' bên trong Subquery
+    $sql = "
+        SELECT 
+            dh.MaDonHang, 
+            dh.NgayDatHang, 
+            dh.NgayDuKien,
+            dh.TrangThai AS TrangThaiDonHang, 
+            dh.TrangThaiThanhToan,
+            dh.TongTien, 
+            dh.DiaChiGiaoHang,
+            pt.TenPhuongThuc,
+            sp.TenSanPham,
+            ctsp.BoNho,
+            ctsp.RAM,
+            ms.TenMau,
+            ctdh.SoLuong,
+            ctdh.DonGia,
+            (SELECT DuongLinkAnh FROM HinhAnh ha 
+             WHERE ha.MaMau = ctsp.MaMau 
+             AND ha.LaAnhDaiDien = 1 
+             LIMIT 1) AS HinhAnhSanPham
+        FROM DonHang dh
+        JOIN ChiTietDonHang ctdh ON dh.MaDonHang = ctdh.MaDonHang
+        JOIN ChiTietSanPham ctsp ON ctdh.MaChiTietSP = ctsp.MaChiTietSP
+        JOIN SanPham sp ON ctsp.MaSanPham = sp.MaSanPham
+        LEFT JOIN MauSac ms ON ctsp.MaMau = ms.MaMau
+        LEFT JOIN PhuongThucThanhToan pt ON dh.MaPTTT = pt.MaPTTT
+        WHERE dh.MaKhachHang = ?
+        ORDER BY dh.NgayDatHang DESC
+    ";
 
-    FROM DonHang dh
-    JOIN ChiTietDonHang ctdh ON dh.MaDonHang = ctdh.MaDonHang
-    JOIN ChiTietSanPham ctsp ON ctdh.MaChiTietSP = ctsp.MaChiTietSP
-    JOIN SanPham sp ON ctsp.MaSanPham = sp.MaSanPham
-    LEFT JOIN MauSac ms ON ctsp.MaMau = ms.MaMau
-    LEFT JOIN PhuongThucThanhToan pt ON dh.MaPTTT = pt.MaPTTT
+    // 3. Thực thi bằng PDO
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$user_id]);
     
-    WHERE dh.MaKhachHang = ?
-    ORDER BY dh.NgayDatHang DESC
-";
+    // Lấy toàn bộ dữ liệu dưới dạng mảng kết hợp
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
+    $orders = [];
 
-$orders = [];
-
-// Hàm helper để map trạng thái đơn hàng sang text tiếng Việt
-function getStatusText($status_code) {
-    switch ($status_code) {
-        case 0: return "Chờ duyệt";
-        case 1: return "Đang giao hàng";
-        case 2: return "Giao thành công";
-        case 3: return "Đã hủy";
-        default: return "Không xác định";
-    }
-}
-
-// Hàm helper map trạng thái thanh toán
-function getPaymentStatusText($status_code) {
-    switch ($status_code) {
-        case 0: return "Chưa thanh toán";
-        case 1: return "Đã thanh toán";
-        case 2: return "Đã hoàn tiền";
-        default: return "Khác";
-    }
-}
-
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
+    // 4. Xử lý dữ liệu
+    foreach ($rows as $row) {
         $maDonHang = $row['MaDonHang'];
 
-        // Nếu đơn hàng chưa tồn tại trong mảng kết quả, tạo mới
         if (!isset($orders[$maDonHang])) {
             $orders[$maDonHang] = [
                 'order_id' => $row['MaDonHang'],
@@ -98,38 +71,42 @@ if ($result->num_rows > 0) {
                 'payment_status_text' => getPaymentStatusText($row['TrangThaiThanhToan']),
                 'payment_method' => $row['TenPhuongThuc'],
                 'address' => $row['DiaChiGiaoHang'],
-                'items' => [] // Khởi tạo mảng chứa các sản phẩm
+                'items' => []
             ];
         }
 
-        // Thêm sản phẩm vào danh sách items của đơn hàng đó
         $orders[$maDonHang]['items'][] = [
             'product_name' => $row['TenSanPham'],
-            'variant_info' => trim($row['BoNho'] . " " . $row['RAM']), // VD: 256GB 8GB
+            'variant_info' => trim($row['BoNho'] . " " . $row['RAM']),
             'color' => $row['TenMau'],
             'quantity' => (int)$row['SoLuong'],
             'price' => (float)$row['DonGia'],
             'price_formatted' => number_format($row['DonGia'], 0, ',', '.') . ' đ',
-            'image' => $row['HinhAnhSanPham'] ?? 'https://via.placeholder.com/150' // Ảnh fallback nếu null
+            'image' => $row['HinhAnhSanPham'] ?? 'https://via.placeholder.com/150'
         ];
     }
-    
-    // Reset keys của array để trả về JSON dạng mảng [{}, {}] thay vì object {"1": {}, "5": {}}
-    $response_data = array_values($orders);
-    
+
     echo json_encode([
         "success" => true,
-        "data" => $response_data
+        "data" => array_values($orders)
     ]);
 
-} else {
-    // Không có đơn hàng nào
+} catch (PDOException $e) {
+    // Trả về lỗi nếu có vấn đề trong quá trình truy vấn
     echo json_encode([
-        "success" => true,
-        "data" => [] 
+        "success" => false,
+        "message" => "Lỗi truy vấn: " . $e->getMessage()
     ]);
 }
 
-$stmt->close();
-$conn->close();
+// Helper functions
+function getStatusText($status_code) {
+    $status_map = [0 => "Chờ duyệt", 1 => "Đang giao hàng", 2 => "Giao thành công", 3 => "Đã hủy"];
+    return $status_map[$status_code] ?? "Không xác định";
+}
+
+function getPaymentStatusText($status_code) {
+    $payment_map = [0 => "Chưa thanh toán", 1 => "Đã thanh toán", 2 => "Đã hoàn tiền"];
+    return $payment_map[$status_code] ?? "Khác";
+}
 ?>

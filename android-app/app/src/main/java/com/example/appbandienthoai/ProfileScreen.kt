@@ -114,16 +114,16 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Thông tin cá nhân") },
+                title = { Text("Thông tin cá nhân", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, null)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF1976D2),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = Color.White,
+                    titleContentColor = Color.Black,
+                    navigationIconContentColor = Color.Black
                 )
             )
         }
@@ -147,7 +147,7 @@ fun ProfileScreen(
                 Box(
                     Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1976D2))
+                        .background(Color(0xFF6A1B9A))
                         .padding(32.dp),
                     Alignment.Center
                 ) {
@@ -241,7 +241,7 @@ fun ProfileScreen(
                 enabled = hasChanges && !isLoading,
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF1976D2)
+                    containerColor = Color(0xFF6A1B9A)
                 )
             ) {
                 if (isLoading) {

@@ -287,13 +287,15 @@ fun InputSection(
 fun SocialMediaButton(iconRes: Int, onClick: () -> Unit) {
     OutlinedButton(
         onClick = onClick,
-        modifier = Modifier.size(56.dp),
-        shape = RoundedCornerShape(12.dp)
+        modifier = Modifier.size(64.dp), // Tăng từ 56.dp lên 64.dp
+        shape = RoundedCornerShape(12.dp),
+        contentPadding = PaddingValues(12.dp) // Điều chỉnh padding để logo to hơn
     ) {
         Image(
             painter = painterResource(id = iconRes),
             contentDescription = null,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Fit
         )
     }
 }

@@ -93,12 +93,12 @@ fun OrderTabContent(
         // --- Tab Row ---
         TabRow(
             selectedTabIndex = pagerState.currentPage,
-            containerColor = Color.White,
-            contentColor = MaterialTheme.colorScheme.primary,
+            containerColor = Color(0xFF6A1B9A),
+            contentColor = Color.White,
             indicator = { tabPositions ->
                 TabRowDefaults.Indicator(
                     Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
-                    color = MaterialTheme.colorScheme.primary
+                    color = Color.White
                 )
             }
         ) {
@@ -171,7 +171,8 @@ fun OrderItemCard(order: OrderHistoryItem) {
                 Text(
                     text = "Đơn hàng #${order.orderId}",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    color = Color(0xFF6A1B9A)
                 )
                 StatusChip(statusText = order.statusText, statusCode = order.statusCode)
             }
@@ -182,9 +183,18 @@ fun OrderItemCard(order: OrderHistoryItem) {
                 color = Color.Gray
             )
 
+            // Hiển thị ngày dự kiến nếu có
+            order.dateExpected?.let {
+                Text(
+                    text = "Dự kiến giao: $it",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF1976D2)
+                )
+            }
+
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
-            // --- List sản phẩm trong đơn ---
+            // --- List sản phẩm ---
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 order.items.forEach { product ->
                     ProductRowItem(product)
@@ -193,27 +203,50 @@ fun OrderItemCard(order: OrderHistoryItem) {
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
+            // --- Thông tin bổ sung: Địa chỉ & PTTT ---
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Địa chỉ: ${order.address}",
+                    fontSize = 12.sp,
+                    color = Color.DarkGray,
+                    maxLines = 1
+                )
+                Text(
+                    text = "Thanh toán: ${order.paymentMethod ?: "N/A"}",
+                    fontSize = 12.sp,
+                    color = Color.DarkGray
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             // --- Footer: Tổng tiền ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
             ) {
                 Column {
                     Text(
                         text = order.paymentStatusText,
-                        fontSize = 12.sp,
-                        color = if (order.paymentStatusText == "Đã thanh toán") Color(0xFF2E7D32) else Color(0xFFE65100)
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = when(order.paymentStatusText) {
+                            "Đã thanh toán" -> Color(0xFF2E7D32)
+                            "Chưa thanh toán" -> Color(0xFFE65100)
+                            else -> Color.Gray
+                        }
                     )
                     Text(text = "${order.items.size} sản phẩm", fontSize = 12.sp, color = Color.Gray)
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("Tổng cộng", fontSize = 12.sp, color = Color.Gray)
+                    Text("Tổng thanh toán", fontSize = 11.sp, color = Color.Gray)
                     Text(
                         text = order.totalPriceFormatted,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFD32F2F), // Màu đỏ cho giá
-                        fontSize = 16.sp
+                        color = Color(0xFFD32F2F),
+                        fontSize = 18.sp
                     )
                 }
             }

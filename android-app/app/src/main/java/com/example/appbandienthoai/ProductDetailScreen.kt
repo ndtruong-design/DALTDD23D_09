@@ -52,14 +52,12 @@ fun ProductDetailScreen(
         try {
             isLoading = true
             errorMsg = null
-            // Lấy chi tiết variant dựa trên Sản phẩm + Bộ nhớ + Màu sắc
             val response = RetrofitClient.api.getProductDetail(
                 maSanPham,
                 selectedMemory,
                 selectedColorId.ifEmpty { null }
             )
             product = response
-
             if (response != null) {
                 try {
                     val colors = RetrofitClient.api.getColor(response.MaSanPham, response.BoNho)
@@ -69,7 +67,7 @@ fun ProductDetailScreen(
                         selectedColorId = response.MaMau.toString()
                     }
                 } catch (e: Exception) {
-                    Log.e("PRODUCT_ERROR", "Color fetch failed: ${e.message}")
+                    Log.e("PRODUCT_ERROR", "Không lấy màu được ${e.message}")
                 }
             }
         } catch (e: Exception) {
@@ -93,7 +91,7 @@ fun ProductDetailScreen(
             }
         }
     }
-
+    //Giao diện
     Scaffold(
         topBar = {
             TopAppBar(
@@ -158,7 +156,7 @@ fun ProductDetailScreen(
                     Text(text = product?.Hang ?: "", color = Color.Gray, fontSize = 14.sp)
                     Text(text = product?.TenSanPham ?: "", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                     Text(
-                        text = "Giá: ${product?.Gia ?: 0} VND",
+                        "Giá: %,d đ".format(product?.Gia).replace(',', '.'),
                         fontSize = 22.sp,
                         color = Color.Red,
                         fontWeight = FontWeight.Bold,
@@ -175,7 +173,7 @@ fun ProductDetailScreen(
                                 selected = selectedMemory == mem,
                                 onClick = {
                                     selectedMemory = mem
-                                    selectedColorId = "" // Reset để load lại theo cấu hình mới
+                                    selectedColorId = ""
                                 },
                                 label = { Text(mem) },
                                 modifier = Modifier.padding(end = 8.dp)
@@ -183,7 +181,7 @@ fun ProductDetailScreen(
                         }
                     }
 
-                    // 4. Chọn màu sắc (Chỉ hiện màu có MaHex từ API)
+                    // 4. Chọn màu sắc
                     if (colorList.isNotEmpty()) {
                         Text("Chọn màu sắc:", fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
                         LazyRow(
@@ -222,7 +220,7 @@ fun ProductDetailScreen(
                             color = Color.Gray
                         )
                     }
-
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // 5. Mô tả sản phẩm
@@ -232,10 +230,21 @@ fun ProductDetailScreen(
                         modifier = Modifier.padding(top = 8.dp),
                         lineHeight = 22.sp
                     )
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    // 6. Nút mua hàng
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+                    //6. Thông tin chi tiết
+                    Text(text="Thông tin chi tiết:", fontWeight = FontWeight.Bold)
+                    Text(text="Bộ nhớ: "+product?.BoNho.toString())
+                    Text(text="CPU: "+product?.CPU.toString())
+                    Text(text="Camera sau: "+product?.CameraSau.toString())
+                    Text(text="Camera trước: "+product?.CameraTruoc.toString())
+                    Text(text="GPU: "+product?.GPU.toString())
+                    Text(text="Hệ điều hành "+product?.HeDieuHanh.toString())
+                    Text(text="Kích thước: "+product?.KichThuoc.toString())
+                    Text(text="Màn hình: "+product?.ManHinh.toString())
+                    Text(text="Pin: "+product?.Pin.toString())
+                    Text(text="Ram: "+product?.RAM.toString())
+                    // 7. Nút mua hàng
                     Button(
                         onClick = {
                             coroutineScope.launch {

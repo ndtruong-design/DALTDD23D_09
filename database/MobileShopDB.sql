@@ -229,7 +229,7 @@
     (7,3,'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/x/i/xiaomi-redmi-note-13-pro-4g_4__1_3.png', FALSE); -- Ảnh chi tiết Xiaomi
     -- 6. Thêm dữ liệu Khách hàng
     INSERT INTO KhachHang (TenDangNhap, HoTen, MatKhau, NgaySinh, SoDienThoai, Email, DiaChi, AnhDaiDien) VALUES 
-    ('nguyenvanan', 'Nguyễn Văn An', '123456', '1999-01-01', '0909123456', 'nguyenvanan@example.com', '123 Đường Lê Lợi, Q1, TP.HCM', 'https://example.com/avatar-an.jpg'),
+    ('nguyenvanan', 'Nguyễn Văn An', '123456', '1999-01-01', '0909123456', 'nguyenvanan@example.com', '123 Đường Lê Lợi, Q1, TP.HCM', 'https://cdn11.dienmaycholon.vn/filewebdmclnew/public/userupload/files/Image%20FP_2024/avatar-dep-1.jpg'),
     ('tranthib', 'Trần Thị B', 'password', '2000-05-20', '0912345678', 'tranthib@example.com', '456 Đường Nguyễn Huệ, Q1, TP.HCM', 'https://example.com/avatar-b.jpg');
 
     -- 6.1. Thêm dữ liệu Giỏ hàng
@@ -267,7 +267,7 @@
 
     -- 14. Thêm dữ liệu Quảng cáo (Banner)
     INSERT INTO QuangCao (HinhAnh, TrangThai) VALUES 
-    ('https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-15-plus_1__1.png', 1),
-    ('https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-z-flip-7-1.jpg', 1),
-    ('https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/d/i/dien-thoai-oppo-find-n5_h_nh_2.png',1),
-    ('https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/_/i/_i_n_tho_i_honor_x6c_6gb_128gb-1_1.jpg',1)
+    ('https://cellphones.com.vn/sforum/wp-content/uploads/2019/05/Honor-20-Pro-lo-anh-quang-cao-1.jpg', 1),
+    ('https://s3.cloud.cmctelecom.vn/tinhte2/2019/07/4706909_Cover_Samsung_chong_nuoc.jpg', 1),
+    ('https://img.global.news.samsung.com/vn/wp-content/uploads/2021/05/KV-final-12-1024x666.jpg',1),
+    ('https://cdn.tgdd.vn/Files/2018/08/01/1105915/oppo_f9_1_800x450.jpg',1)

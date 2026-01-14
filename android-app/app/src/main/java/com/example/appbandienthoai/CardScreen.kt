@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -55,12 +56,13 @@ fun CartScreen(
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold
                         )
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-
                         }
-                        }
+                    },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, null)
                     }
+                },
             )
         }
     ) {
@@ -145,7 +147,7 @@ fun CartItemRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(item.item.TenSanPham, fontWeight = FontWeight.Bold, maxLines = 2)
             Text("Màu: ${item.item.TenMau} • ${item.item.BoNho}", fontSize = 12.sp)
-            Text("${item.item.Gia}đ", color = Color(0xFF6A1B9A))
+            Text("%,d đ".format(item.item.Gia).replace(',', '.'), color = Color(0xFF6A1B9A))
         }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -165,12 +167,13 @@ fun CartItemRow(
                 }
             }
 
-            Text(
-                text = "Xóa",
-                color = Color.Red,
-                fontSize = 12.sp,
-                modifier = Modifier.clickable { onRemove() }
-            )
+            IconButton(onClick = onRemove) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Xóa",
+                    tint = Color.Red
+                )
+            }
         }
     }
 }
@@ -188,9 +191,9 @@ fun CartSummary(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Tổng cộng", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("Tổng cộng", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6A1B9A))
             Text(
-                "$total đ",
+                " %,d đ".format(total).replace(',', '.'),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF6A1B9A)
@@ -203,7 +206,8 @@ fun CartSummary(
             onClick = onCheckout,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp)
+                .height(48.dp),
+            colors = ButtonColors(Color(0xFF6A1B9A), contentColor = Color.White, disabledContentColor = Color.Gray, disabledContainerColor = Color.Gray)
         ) {
             Text("THANH TOÁN")
         }

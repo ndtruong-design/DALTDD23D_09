@@ -62,9 +62,9 @@ fun MainScreen(navController: NavHostController) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Mobile Store", fontWeight = FontWeight.Bold)
+                        Text("T3Q MOBILE STORE", fontWeight = FontWeight.Bold)
                         IconButton(onClick = {}) {
-                            Icon(Icons.Default.Favorite, contentDescription = null)
+                            Icon(Icons.Default.Favorite, contentDescription = null,tint=Color.Red)
                         }
                     }
                 }
@@ -94,7 +94,8 @@ fun MainScreen(navController: NavHostController) {
                         icon = {
                             Icon(
                                 imageVector = item.icon,
-                                contentDescription = item.title
+                                contentDescription = item.title,
+                                tint=Color(0xFF6A1B9A)
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(
@@ -272,7 +273,7 @@ fun ProductItem(product: Product, modifier: Modifier = Modifier,onClick:()-> Uni
                     fontWeight = FontWeight.Bold
                 )
                 Text(product.Hang, fontSize = 12.sp, color = Color.Gray)
-                Text("Giá ${product.Gia}", color = Color(0xFF6A1B9A), fontWeight = FontWeight.Bold)
+                Text("Giá: %,d đ".format(product.Gia).replace(',', '.'), color = Color(0xFF6A1B9A), fontWeight = FontWeight.Bold)
 
             }
         }
