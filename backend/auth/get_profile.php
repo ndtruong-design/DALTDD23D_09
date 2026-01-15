@@ -71,4 +71,8 @@ try {
         'message' => 'Lỗi server: ' .  $e->getMessage()
     ), JSON_UNESCAPED_UNICODE);
 }
+<<<<<<< HEAD
 ?> 
+=======
+?> 
+>>>>>>> 51dafcfea0b2fac3987e99f2099f56ff08c39912

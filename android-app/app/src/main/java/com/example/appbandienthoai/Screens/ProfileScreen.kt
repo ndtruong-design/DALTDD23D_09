@@ -140,6 +140,7 @@ fun ProfileScreen(
                         modifier = Modifier.size(100.dp).clip(CircleShape),
                         contentScale = ContentScale.Crop
                     )
+
                 } else {
                     Box(
                         Modifier.size(100.dp).clip(CircleShape).background(Color(0xFFEEEEEE)),
@@ -237,6 +238,22 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            Button(
+                onClick = { update() },
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                enabled = !isLoading,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A1B9A))
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
+                } else {
+                    Text("CẬP NHẬT", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
 
             OutlinedButton(
                 onClick = { navController.navigate("change_password") },
@@ -247,6 +264,7 @@ fun ProfileScreen(
                 Spacer(Modifier.width(8.dp))
                 Text("Đổi mật khẩu", fontSize = 15.sp)
             }
+
             Spacer(Modifier.height(32.dp))
             OutlinedButton(
                 onClick = { navController.navigate("login") },
@@ -257,6 +275,10 @@ fun ProfileScreen(
                 Spacer(Modifier.width(8.dp))
                 Text("Đăng xuất", fontSize = 15.sp)
             }
+
+
+            Spacer(Modifier.height(32.dp))
+
         }
     }
 }
