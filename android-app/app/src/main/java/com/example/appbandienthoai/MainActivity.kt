@@ -226,12 +226,19 @@ fun AppNavigation(cartViewModel: CartViewModel) {
 
 
         composable("don_hang") {
+            val context = LocalContext.current
+            var userId by remember { mutableStateOf(-1) }
 
-            OrderHistoryScreen(
-                api = RetrofitClient.api,
-                userId = 1,
-                navController = navController
-            )
+            LaunchedEffect(Unit) {
+                userId = getUserId(context)
+            }
+            if (userId > 0) {
+                OrderHistoryScreen(
+                    api = RetrofitClient.api,
+                    userId = userId,
+                    navController = navController
+                )
+            }
         }
     }
 }

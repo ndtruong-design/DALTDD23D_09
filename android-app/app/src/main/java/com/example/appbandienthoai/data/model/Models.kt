@@ -179,6 +179,7 @@ data class AddCartRequest(
     val MaKhachHang: Int,
     val MaSanPham: Int,
     val MaMau: Int,
+    val BoNho:String
 
 )
 

@@ -176,7 +176,7 @@ fun LoginScreen(
                                     savePassword(context, password)
                                     saveRememberMe(context, true)
                                 } else {
-                                    clearLoginInfo(context) // ✅ QUAN TRỌNG
+                                    clearLoginInfo(context)
                                 }
 
                                 saveToken(context, tokenFromApi)

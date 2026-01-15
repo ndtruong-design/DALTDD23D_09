@@ -182,7 +182,22 @@ fun ProductDetailScreen(
                                     selectedColorId = ""
                                 },
                                 label = { Text(mem) },
-                                modifier = Modifier.padding(end = 8.dp)
+                                modifier = Modifier.padding(end = 8.dp),
+                                colors = FilterChipDefaults.filterChipColors(
+                                    containerColor =Color.White,
+                                    labelColor=Color.Black,
+                                    selectedContainerColor = Color(0xFF673AB7),
+                                    selectedLabelColor = Color.White
+                                ),
+                                border = FilterChipDefaults.filterChipBorder(
+                                    enabled = true,
+                                    selected = true,
+                                    borderColor = Color.Gray,
+                                    disabledBorderColor = Color.Gray,
+                                    selectedBorderColor = Color.Gray,
+                                    disabledSelectedBorderColor = Color.Gray
+
+                                )
                             )
                         }
                     }
@@ -262,7 +277,8 @@ fun ProductDetailScreen(
                                             AddCartRequest(
                                                 MaKhachHang = userId,
                                                 MaSanPham = product!!.MaSanPham,
-                                                MaMau = selectedColorId.toInt()
+                                                MaMau = selectedColorId.toInt(),
+                                                BoNho = product!!.BoNho
                                             )
                                         )
                                         if (response.success) {
@@ -279,6 +295,7 @@ fun ProductDetailScreen(
                                 }
                             }
                         },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7)),
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
