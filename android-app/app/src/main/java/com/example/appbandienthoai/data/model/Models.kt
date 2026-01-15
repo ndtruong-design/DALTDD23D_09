@@ -208,6 +208,10 @@ data class UpdateQuantityRequest(
     val SoLuong: Int
 )
 
+data class DeleteOrderRequest(
+    val MaKhachHang: Int,
+    val MaDonHang: Int
+)
 data class RemoveCartRequest(
     val MaKhachHang: Int,
     val MaChiTietSP: Int

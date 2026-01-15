@@ -10,6 +10,7 @@ import com.example.appbandienthoai.data.model.ChangePasswordRequest
 import com.example.appbandienthoai.data.model.ChangePasswordResponse
 import com.example.appbandienthoai.data.model.CheckoutRequest
 import com.example.appbandienthoai.data.model.ColorPhone
+import com.example.appbandienthoai.data.model.DeleteOrderRequest
 import com.example.appbandienthoai.data.model.FilterResponse
 import com.example.appbandienthoai.data.model.ForgotPasswordRequest
 import com.example.appbandienthoai.data.model.ForgotPasswordResponse
@@ -149,6 +150,11 @@ interface ApiService {
     suspend fun placeOrder(
         @Body request: PlaceOrderRequest
     ): PlaceOrderResponse
+
+    @POST("auth/delete_order.php")
+    suspend fun deleteOrder(
+        @Body request: DeleteOrderRequest
+    ): cartResponse<Unit>
 
     @GET("auth/get_user_info.php")
     suspend fun getUserInfo(

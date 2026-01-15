@@ -16,15 +16,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.appbandienthoai.data.api.ApiService
+import com.example.appbandienthoai.data.model.LoginRequest
 import com.example.appbandienthoai.data.model.UpdateProfileRequest
 import com.example.appbandienthoai.data.model.UserProfile
+import com.example.appbandienthoai.utils.clearLoginInfo
+import com.example.appbandienthoai.utils.savePassword
+import com.example.appbandienthoai.utils.saveRememberMe
+import com.example.appbandienthoai.utils.saveToken
+import com.example.appbandienthoai.utils.saveUserId
+import com.example.appbandienthoai.utils.saveUsername
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +42,13 @@ fun ProfileScreen(
     api: ApiService,
     onBack: () -> Unit,
     navController: NavHostController
-) {
+) { var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var rememberMe by remember { mutableStateOf(false) }
+    var loading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
     var profile by remember { mutableStateOf<UserProfile?>(null) }
     var hoTen by remember { mutableStateOf("") }
     var soDienThoai by remember { mutableStateOf("") }
@@ -267,7 +282,12 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(32.dp))
             OutlinedButton(
-                onClick = { navController.navigate("login") },
+                onClick = {   scope.launch {
+
+                    clearLoginInfo(context)
+                    navController.navigate("login")
+                }
+                },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7)),
                 shape = RoundedCornerShape(12.dp)
@@ -275,10 +295,6 @@ fun ProfileScreen(
                 Spacer(Modifier.width(8.dp))
                 Text("Đăng xuất", fontSize = 15.sp)
             }
-
-
-            Spacer(Modifier.height(32.dp))
-
         }
     }
 }

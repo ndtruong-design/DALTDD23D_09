@@ -3,6 +3,7 @@ package com.example.appbandienthoai.Screens
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,14 +20,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.appbandienthoai.data.api.ApiService
+import com.example.appbandienthoai.data.api.RetrofitClient.api
+import com.example.appbandienthoai.data.model.DeleteOrderRequest
 import com.example.appbandienthoai.data.model.OrderHistoryItem
 import com.example.appbandienthoai.data.model.OrderHistoryProduct
+import com.example.appbandienthoai.utils.getUserId
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,7 +78,7 @@ fun OrderHistoryScreen(
             val historyOrders = orders.filter { it.statusCode == 2 || it.statusCode == 3 }
 
             Column(modifier = Modifier.padding(padding)) {
-                OrderTabContent(activeOrders, historyOrders)
+                OrderTabContent(userId,activeOrders, historyOrders)
             }
         }
     }
@@ -81,6 +86,7 @@ fun OrderHistoryScreen(
 
 @Composable
 fun OrderTabContent(
+    userId: Int,
     activeOrders: List<OrderHistoryItem>,
     historyOrders: List<OrderHistoryItem>
 ) {
@@ -140,7 +146,7 @@ fun OrderTabContent(
                     contentPadding = PaddingValues(16.dp)
                 ) {
                     items(currentList) { order ->
-                        OrderItemCard(order)
+                        OrderItemCard(order,userId)
                     }
                 }
             }
@@ -149,7 +155,8 @@ fun OrderTabContent(
 }
 
 @Composable
-fun OrderItemCard(order: OrderHistoryItem) {
+fun OrderItemCard(order: OrderHistoryItem,userId: Int) {  val scope = rememberCoroutineScope()
+
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -169,6 +176,20 @@ fun OrderItemCard(order: OrderHistoryItem) {
                     color = Color(0xFF6A1B9A)
                 )
                 StatusChip(statusText = order.statusText, statusCode = order.statusCode)
+
+                StatusButton(
+                    text = "Hủy đơn",
+                    bgColor = Color(0xFFFFEBEE),  // nền đỏ nhạt như statusCode 3
+                    textColor = Color(0xFFC62828), // chữ đỏ
+                    onClick = {
+
+                        scope.launch {
+                            var reponse=api.deleteOrder(DeleteOrderRequest(userId,order.orderId))
+                            if (reponse.success){
+
+                            }
+                    }}
+                )
             }
 
             Text(
@@ -280,7 +301,28 @@ fun ProductRowItem(product: OrderHistoryProduct) {
         }
     }
 }
-
+@Composable
+fun StatusButton(
+    text: String,
+    bgColor: Color,
+    textColor: Color,
+    onClick: () -> Unit
+) {
+    Surface(
+        color = bgColor,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .clickable { onClick() }
+    ) {
+        Text(
+            text = text,
+            color = textColor,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+        )
+    }
+}
 @Composable
 fun StatusChip(statusText: String, statusCode: Int) {
     val (bgColor, textColor) = when (statusCode) {
