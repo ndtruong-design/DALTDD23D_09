@@ -60,8 +60,4 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         'orders' => $orders,
         'total' => count($orders)
     ), JSON_UNESCAPED_UNICODE);
-<<<<<<< HEAD
 ?>
-=======
-?>
->>>>>>> 51dafcfea0b2fac3987e99f2099f56ff08c39912

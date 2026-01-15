@@ -203,7 +203,6 @@ fun MainScreen(navController: NavHostController) {
                         it.Hang.contains(searchQuery, ignoreCase = true)
             }
 
-            // Chia danh sách đã lọc thành từng hàng 2 sản phẩm
             val rows = filteredList.chunked(2)
 
             if (filteredList.isEmpty() && !isLoading) {

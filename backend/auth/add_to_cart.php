@@ -19,15 +19,16 @@ if (!isset($data['MaKhachHang']) || !isset($data['MaSanPham']) || !isset($data['
 $maKhachHang = $data['MaKhachHang'];
 $maSanPham = $data['MaSanPham'];
 $maMau = $data['MaMau'];
+$boNho=$data['BoNho'] ;
 $soLuong = isset($data['SoLuong']) ? (int)$data['SoLuong'] : 1;
 
 try {
-    // 1. Tìm MaChiTietSP phù hợp với Sản phẩm và Màu sắc đã chọn
+    // 1. Tìm MaChiTietSP phù hợp với Sản phẩm, Màu sắc và Bộ nhớ đã chọn
     $sql_find_detail = "SELECT MaChiTietSP FROM ChiTietSanPham 
-                        WHERE MaSanPham = :maSanPham AND MaMau = :maMau LIMIT 1";
+                        WHERE MaSanPham = :maSanPham AND BoNho = :boNho AND MaMau = :maMau LIMIT 1 ";
     
-    $stmt_find = $conn->prepare($sql_find_detail);
-    $stmt_find->execute([':maSanPham' => $maSanPham, ':maMau' => $maMau]);
+    $stmt_find = $conn->prepare($sql_find_detail); 
+    $stmt_find->execute([':maSanPham' => $maSanPham, ':maMau' => $maMau, ':boNho' => $boNho]);
     $detail = $stmt_find->fetch(PDO::FETCH_ASSOC);
 
     if (!$detail) {
