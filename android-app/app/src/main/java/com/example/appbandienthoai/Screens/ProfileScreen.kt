@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -18,22 +19,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.appbandienthoai.data.api.ApiService
-import com.example.appbandienthoai.data.model.LoginRequest
 import com.example.appbandienthoai.data.model.UpdateProfileRequest
 import com.example.appbandienthoai.data.model.UserProfile
 import com.example.appbandienthoai.utils.clearLoginInfo
-import com.example.appbandienthoai.utils.savePassword
-import com.example.appbandienthoai.utils.saveRememberMe
-import com.example.appbandienthoai.utils.saveToken
-import com.example.appbandienthoai.utils.saveUserId
-import com.example.appbandienthoai.utils.saveUsername
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,13 +37,7 @@ fun ProfileScreen(
     api: ApiService,
     onBack: () -> Unit,
     navController: NavHostController
-) { var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var rememberMe by remember { mutableStateOf(false) }
-    var loading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
-    val context = LocalContext.current
-
+) {
     var profile by remember { mutableStateOf<UserProfile?>(null) }
     var hoTen by remember { mutableStateOf("") }
     var soDienThoai by remember { mutableStateOf("") }
@@ -57,7 +46,16 @@ fun ProfileScreen(
     var diaChi by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf("") }
+    var showLogoutDialog by remember { mutableStateOf(false) }
+
+    // Error states
+    var hoTenError by remember { mutableStateOf("") }
+    var soDienThoaiError by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf("") }
+    var ngaySinhError by remember { mutableStateOf("") }
+
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         isLoading = true
@@ -81,7 +79,61 @@ fun ProfileScreen(
         }
     }
 
+    fun validateInputs(): Boolean {
+        var isValid = true
+
+        // Reset errors
+        hoTenError = ""
+        soDienThoaiError = ""
+        emailError = ""
+        ngaySinhError = ""
+
+
+        if (hoTen.isBlank()) {
+            hoTenError = "Họ tên không được để trống"
+            isValid = false
+        }
+
+
+        if (soDienThoai.isBlank()) {
+            soDienThoaiError = "Số điện thoại không được để trống"
+            isValid = false
+        } else if (!soDienThoai.all { it.isDigit() }) {
+            soDienThoaiError = "Số điện thoại chỉ được chứa chữ số"
+            isValid = false
+        } else if (soDienThoai.length != 10) {
+            soDienThoaiError = "Số điện thoại phải có 10 chữ số"
+            isValid = false
+        } else if (!soDienThoai.startsWith("0")) {
+            soDienThoaiError = "Số điện thoại phải bắt đầu bằng số 0"
+            isValid = false
+        }
+
+        if (email.isNotBlank()) {
+            val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$".toRegex()
+            if (!email.matches(emailRegex)) {
+                emailError = "Email không hợp lệ"
+                isValid = false
+            }
+        }
+
+        if (ngaySinh.isNotBlank()) {
+            val dateRegex = "^\\d{4}-\\d{2}-\\d{2}$".toRegex()
+            if (!ngaySinh.matches(dateRegex)) {
+                ngaySinhError = "Ngày sinh phải theo định dạng YYYY-MM-DD"
+                isValid = false
+            }
+        }
+
+        return isValid
+    }
+
     fun update() {
+        if (!validateInputs()) {
+            message = " Vui lòng kiểm tra lại thông tin"
+            return
+        }
+
         scope.launch {
             isLoading = true
             message = ""
@@ -104,7 +156,7 @@ fun ProfileScreen(
                     diaChi = res.user.DiaChi.orEmpty()
                     message = "✓ Cập nhật thành công"
                 } else {
-                    message = res.message ?: "Cập nhật thất bại"
+                    message = " ${res.message ?: "Cập nhật thất bại"}"
                 }
             } catch (e: Exception) {
                 message = "Lỗi: ${e.message}"
@@ -114,6 +166,33 @@ fun ProfileScreen(
         }
     }
 
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Đăng xuất") },
+            text = { Text("Bạn có chắc chắn muốn đăng xuất?") },
+            confirmButton = {
+                OutlinedButton(
+                    onClick = {
+                        scope.launch {
+                            clearLoginInfo(context)
+                            navController.navigate("login") {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                    }
+                ) {
+                    Text("Đăng xuất", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Hủy")
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -121,6 +200,15 @@ fun ProfileScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, null)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showLogoutDialog = true }) {
+                        Icon(
+                            Icons.Default.ExitToApp,
+                            contentDescription = "Đăng xuất",
+                            tint = Color.Red
+                        )
                     }
                 }
             )
@@ -141,13 +229,7 @@ fun ProfileScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            // Avatar
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 24.dp),
-                Alignment.Center
-            ) {
+            Box(Modifier.fillMaxWidth().padding(vertical = 24.dp), Alignment.Center) {
                 if (!profile?.AnhDaiDien.isNullOrEmpty()) {
                     AsyncImage(
                         model = profile?.AnhDaiDien,
@@ -155,7 +237,6 @@ fun ProfileScreen(
                         modifier = Modifier.size(100.dp).clip(CircleShape),
                         contentScale = ContentScale.Crop
                     )
-
                 } else {
                     Box(
                         Modifier.size(100.dp).clip(CircleShape).background(Color(0xFFEEEEEE)),
@@ -175,7 +256,6 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // Thông báo
             if (message.isNotEmpty()) {
                 Text(
                     text = message,
@@ -184,43 +264,75 @@ fun ProfileScreen(
                 )
             }
 
-            // Form
             OutlinedTextField(
                 value = hoTen,
-                onValueChange = { hoTen = it },
-                label = { Text("Họ tên") },
+                onValueChange = {
+                    hoTen = it
+                    hoTenError = ""
+                },
+                label = { Text("Họ tên *") },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                isError = hoTenError.isNotEmpty(),
+                supportingText = if (hoTenError.isNotEmpty()) {
+                    { Text(hoTenError, color = Color.Red, fontSize = 12.sp) }
+                } else null
             )
 
             Spacer(Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = soDienThoai,
-                onValueChange = { soDienThoai = it },
-                label = { Text("Số điện thoại") },
+                onValueChange = {
+                    if (it.length <= 10) {
+                        soDienThoai = it.filter { char -> char.isDigit() }
+                        soDienThoaiError = ""
+                    }
+                },
+                label = { Text("Số điện thoại *") },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                isError = soDienThoaiError.isNotEmpty(),
+                supportingText = if (soDienThoaiError.isNotEmpty()) {
+                    { Text(soDienThoaiError, color = Color.Red, fontSize = 12.sp) }
+                } else null
             )
 
             Spacer(Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = {
+                    email = it
+                    emailError = ""
+                },
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                isError = emailError.isNotEmpty(),
+                supportingText = if (emailError.isNotEmpty()) {
+                    { Text(emailError, color = Color.Red, fontSize = 12.sp) }
+                } else null
             )
 
             Spacer(Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = ngaySinh,
-                onValueChange = { ngaySinh = it },
+                onValueChange = {
+                    ngaySinh = it
+                    ngaySinhError = ""
+                },
                 label = { Text("Ngày sinh (YYYY-MM-DD)") },
+                placeholder = { Text("VD: 2000-01-15") },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                isError = ngaySinhError.isNotEmpty(),
+                supportingText = if (ngaySinhError.isNotEmpty()) {
+                    { Text(ngaySinhError, color = Color.Red, fontSize = 12.sp) }
+                } else null
             )
 
             Spacer(Modifier.height(16.dp))
@@ -236,65 +348,33 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(24.dp))
 
-
-            Button(
-                onClick = { update() },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                enabled = !isLoading,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A1B9A))
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
-                } else {
-                    Text("CẬP NHẬT", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(
+                    onClick = { update() },
+                    modifier = Modifier.weight(1f).height(50.dp),
+                    enabled = !isLoading,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A1B9A))
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+                    } else {
+                        Text("Cập nhật", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
-            }
 
-            Spacer(Modifier.height(16.dp))
-
-            Button(
-                onClick = { update() },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                enabled = !isLoading,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A1B9A))
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
-                } else {
-                    Text("CẬP NHẬT", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                OutlinedButton(
+                    onClick = { navController.navigate("change_password") },
+                    modifier = Modifier.weight(1f).height(50.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Lock, null, Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Đổi mật khẩu", fontSize = 15.sp)
                 }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-
-            OutlinedButton(
-                onClick = { navController.navigate("change_password") },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Icon(Icons.Default.Lock, null, Modifier.size(20.dp))
-                Spacer(Modifier.width(8.dp))
-                Text("Đổi mật khẩu", fontSize = 15.sp)
             }
 
             Spacer(Modifier.height(32.dp))
-            OutlinedButton(
-                onClick = {   scope.launch {
-
-                    clearLoginInfo(context)
-                    navController.navigate("login")
-                }
-                },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7)),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Spacer(Modifier.width(8.dp))
-                Text("Đăng xuất", fontSize = 15.sp)
-            }
         }
     }
 }

@@ -206,16 +206,16 @@ fun AppNavigation(cartViewModel: CartViewModel) {
                 onBack = { navController.popBackStack() }
             )
         }
-    composable("adminOrderdetailscreen/{MaDonHang}",
-            arguments = listOf(navArgument("MaDonHang"){type = NavType.IntType }))
-    { backStackEntry ->
-                val orderId = backStackEntry.arguments?.getInt("MaDonHang") ?: 0
-        AdminOrderDetailScreen(
-            orderId = orderId,
-            api = RetrofitClient.api,
-            onBack = { navController.popBackStack() }
-        )
-    }
+        composable("adminOrderdetailscreen/{MaDonHang}",
+            arguments = listOf(navArgument("MaDonHang"){type = NavType.IntType}))
+        { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getInt("MaDonHang") ?: 0
+            AdminOrderDetailScreen(
+                orderId = orderId,
+                api = RetrofitClient.api,
+                onBack = { navController.popBackStack() }
+            )
+        }
         composable("adminOrderlistscreen")
         {
             AdminOrderListScreen(
