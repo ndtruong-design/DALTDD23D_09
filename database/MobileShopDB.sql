@@ -143,7 +143,15 @@
         TrangThai INT DEFAULT 1, -- 1: Hiện, 0: Ẩn
         FOREIGN KEY (MaDonHang) REFERENCES DonHang(MaDonHang)
     );
-
+    -- 14. Bảng Danh sách yêu thích
+    CREATE TABLE DanhSachYeuThich (
+    MaKhachHang INT NOT NULL,
+    MaSanPham INT NOT NULL,
+    NgayThem DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (MaKhachHang, MaSanPham), -- Khóa chính kép để 1 người không thích 1 món 2 lần
+    FOREIGN KEY (MaKhachHang) REFERENCES KhachHang(MaKhachHang) ON DELETE CASCADE,
+    FOREIGN KEY (MaSanPham) REFERENCES SanPham(MaSanPham) ON DELETE CASCADE
+);
 
     -- Thêm dữ liệu mẫu vào các bảng
 

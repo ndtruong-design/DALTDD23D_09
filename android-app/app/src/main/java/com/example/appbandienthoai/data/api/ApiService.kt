@@ -3,6 +3,8 @@ package com.example.appbandienthoai.data.api
 
 import com.example.appbandienthoai.data.model.AddCartRequest
 import com.example.appbandienthoai.data.model.AddCartResponse
+import com.example.appbandienthoai.data.model.AddFavoriteReponse
+import com.example.appbandienthoai.data.model.AddFavoriteRequest
 import com.example.appbandienthoai.data.model.AdminOrdersResponse
 import com.example.appbandienthoai.data.model.Advertise
 import com.example.appbandienthoai.data.model.CartItem
@@ -33,6 +35,7 @@ import com.example.appbandienthoai.data.model.UpdateProfileResponse
 import com.example.appbandienthoai.data.model.UpdateQuantityRequest
 import com.example.appbandienthoai.data.model.UpdateStatusRequest
 import com.example.appbandienthoai.data.model.UpdateStatusResponse
+import com.example.appbandienthoai.data.model.WishlistResponse
 import com.example.appbandienthoai.data.model.cartResponse
 import com.google.gson.annotations.SerializedName
 import retrofit2.http.Body
@@ -178,4 +181,14 @@ interface ApiService {
     suspend fun searchProducts(
         @Query("query") query: String
     ): FilterResponse
+
+    @POST("auth/favorite.php")
+    suspend fun addFavorite(
+        @Body request: AddFavoriteRequest
+    ): AddFavoriteReponse
+
+    @GET("auth/get_wishlist.php")
+    suspend fun getWishlist(
+        @Query("MaKhachHang") userId: Int
+    ): WishlistResponse
 }

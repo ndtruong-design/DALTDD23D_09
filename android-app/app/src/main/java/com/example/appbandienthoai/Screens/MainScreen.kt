@@ -66,7 +66,9 @@ fun MainScreen(navController: NavHostController) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("T3Q MOBILE STORE", fontWeight = FontWeight.Bold)
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = {
+                            navController.navigate("yeu_thich")
+                        }) {
                             Icon(Icons.Default.Favorite, contentDescription = null,tint=Color.Red)
                         }
                     }

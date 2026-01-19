@@ -1,6 +1,7 @@
 package com.example.appbandienthoai.Screens
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,7 +32,6 @@ import com.example.appbandienthoai.data.api.RetrofitClient.api
 import com.example.appbandienthoai.data.model.DeleteOrderRequest
 import com.example.appbandienthoai.data.model.OrderHistoryItem
 import com.example.appbandienthoai.data.model.OrderHistoryProduct
-import com.example.appbandienthoai.utils.getUserId
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,8 +43,10 @@ fun OrderHistoryScreen(
 ) {
     var orders by remember { mutableStateOf<List<OrderHistoryItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var refreshTrigger by remember { mutableStateOf(0) } // Dùng để load lại trang
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(refreshTrigger) {
+        isLoading = true
         try {
             val response = api.getOrderHistory(userId)
             if (response.success) {
@@ -69,7 +71,7 @@ fun OrderHistoryScreen(
             )
         }
     ) { padding ->
-        if (isLoading) {
+        if (isLoading && orders.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
@@ -78,7 +80,12 @@ fun OrderHistoryScreen(
             val historyOrders = orders.filter { it.statusCode == 2 || it.statusCode == 3 }
 
             Column(modifier = Modifier.padding(padding)) {
-                OrderTabContent(userId,activeOrders, historyOrders)
+                OrderTabContent(
+                    userId = userId,
+                    activeOrders = activeOrders,
+                    historyOrders = historyOrders,
+                    onRefresh = { refreshTrigger++ } // Tăng trigger để load lại
+                )
             }
         }
     }
@@ -88,7 +95,8 @@ fun OrderHistoryScreen(
 fun OrderTabContent(
     userId: Int,
     activeOrders: List<OrderHistoryItem>,
-    historyOrders: List<OrderHistoryItem>
+    historyOrders: List<OrderHistoryItem>,
+    onRefresh: () -> Unit
 ) {
     val tabTitles = listOf("Đơn hàng", "Lịch sử")
     val pagerState = rememberPagerState(pageCount = { tabTitles.size })
@@ -146,7 +154,7 @@ fun OrderTabContent(
                     contentPadding = PaddingValues(16.dp)
                 ) {
                     items(currentList) { order ->
-                        OrderItemCard(order,userId)
+                        OrderItemCard(order, userId, onRefresh)
                     }
                 }
             }
@@ -155,7 +163,9 @@ fun OrderTabContent(
 }
 
 @Composable
-fun OrderItemCard(order: OrderHistoryItem,userId: Int) {  val scope = rememberCoroutineScope()
+fun OrderItemCard(order: OrderHistoryItem, userId: Int, onRefresh: () -> Unit) {
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Card(
         shape = RoundedCornerShape(12.dp),
@@ -175,21 +185,35 @@ fun OrderItemCard(order: OrderHistoryItem,userId: Int) {  val scope = rememberCo
                     fontSize = 16.sp,
                     color = Color(0xFF6A1B9A)
                 )
-                StatusChip(statusText = order.statusText, statusCode = order.statusCode)
-
-                StatusButton(
-                    text = "Hủy đơn",
-                    bgColor = Color(0xFFFFEBEE),  // nền đỏ nhạt như statusCode 3
-                    textColor = Color(0xFFC62828), // chữ đỏ
-                    onClick = {
-
-                        scope.launch {
-                            var reponse=api.deleteOrder(DeleteOrderRequest(userId,order.orderId))
-                            if (reponse.success){
-
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    StatusChip(statusText = order.statusText, statusCode = order.statusCode)
+                    
+                    // Chỉ hiển thị nút hủy nếu đơn hàng ở trạng thái "Chờ duyệt" (statusCode == 0)
+                    if (order.statusCode == 0) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        StatusButton(
+                            text = "Hủy đơn",
+                            bgColor = Color(0xFFFFEBEE),
+                            textColor = Color(0xFFC62828),
+                            onClick = {
+                                scope.launch {
+                                    try {
+                                        val response = api.deleteOrder(DeleteOrderRequest(userId, order.orderId))
+                                        if (response.success) {
+                                            Toast.makeText(context, "Hủy đơn hàng thành công!", Toast.LENGTH_SHORT).show()
+                                            onRefresh() // Gọi load lại trang
+                                        } else {
+                                            Toast.makeText(context, response.message ?: "Không thể hủy đơn hàng", Toast.LENGTH_LONG).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Lỗi kết nối: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                             }
-                    }}
-                )
+                        )
+                    }
+                }
             }
 
             Text(
@@ -301,6 +325,7 @@ fun ProductRowItem(product: OrderHistoryProduct) {
         }
     }
 }
+
 @Composable
 fun StatusButton(
     text: String,
@@ -311,8 +336,7 @@ fun StatusButton(
     Surface(
         color = bgColor,
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier
-            .clickable { onClick() }
+        modifier = Modifier.clickable { onClick() }
     ) {
         Text(
             text = text,
@@ -323,6 +347,7 @@ fun StatusButton(
         )
     }
 }
+
 @Composable
 fun StatusChip(statusText: String, statusCode: Int) {
     val (bgColor, textColor) = when (statusCode) {

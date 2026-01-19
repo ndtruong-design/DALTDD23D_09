@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.appbandienthoai.data.model.AddCartRequest
+import com.example.appbandienthoai.data.model.AddFavoriteRequest
 import com.example.appbandienthoai.data.model.ColorPhone
 import com.example.appbandienthoai.data.model.ImageDetail
 import com.example.appbandienthoai.data.model.ProductDetail
@@ -37,7 +39,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ProductDetailScreen(
     maSanPham: Int,
-    boNho: String,
+    boNho: String?,
     onBackClick: () -> Unit
 ) {
     var product by remember { mutableStateOf<ProductDetail?>(null) }
@@ -45,7 +47,10 @@ fun ProductDetailScreen(
     var colorList by remember { mutableStateOf<List<ColorPhone>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
-    var selectedMemory by remember { mutableStateOf(boNho) }
+    var selectedMemory by remember { 
+        mutableStateOf(if (boNho.isNullOrBlank() || boNho == "none") "256GB" else boNho) 
+    }
+    
     val memoryOptions = listOf("256GB", "512GB")
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -84,7 +89,7 @@ fun ProductDetailScreen(
         }
     }
 
-    // 2. Lấy hình ảnh khi Mã Màu thay đổi
+    // 2. Lấy hình ảnh khi mã màu thay đổi
     LaunchedEffect(selectedColorId, product?.MaChiTietSP) {
         val currentMaSanPham = product?.MaSanPham
         if (selectedColorId.isNotEmpty() && currentMaSanPham != null) {
@@ -161,14 +166,46 @@ fun ProductDetailScreen(
                     // 2. Thông tin cơ bản
                     Text(text = product?.Hang ?: "", color = Color.Gray, fontSize = 14.sp)
                     Text(text = product?.TenSanPham ?: "", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                    Text(
-                        "Giá: %,d đ".format(product?.Gia).replace(',', '.'),
-                        fontSize = 22.sp,
-                        color = Color.Red,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ){
+                        Text(
+                            "Giá: %,d đ".format(product?.Gia).replace(',', '.'),
+                            fontSize = 22.sp,
+                            color = Color.Red,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                        IconButton(onClick = {
+                            coroutineScope.launch {
+                                try {
+                                    val userId = getUserId(context)
+                                    if (userId != -1 && product != null) {
+                                        val response = RetrofitClient.api.addFavorite(
+                                            AddFavoriteRequest(
+                                                MaKhachHang = userId,
+                                                MaSanPham = product!!.MaSanPham
+                                            )
+                                        )
+                                        if (response.success) {
+                                            snackbarHostState.showSnackbar(response.message ?: "Đã thêm vào yêu thích!")
+                                        } else {
+                                            snackbarHostState.showSnackbar(response.message ?: "Thêm thất bại")
+                                        }
+                                    } else {
+                                        snackbarHostState.showSnackbar("Vui lòng đăng nhập để thêm vào yêu thích")
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e("FAVORITE_ERROR", "Lỗi: ${e.message}")
+                                    snackbarHostState.showSnackbar("Lỗi kết nối server")
+                                }
+                            }
+                        }) {
+                            Icon(Icons.Default.Favorite, contentDescription = "Yêu thích", tint = Color.Red)
+                        }
+                    }
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                     // 3. Chọn bộ nhớ

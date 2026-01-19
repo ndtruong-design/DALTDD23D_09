@@ -183,6 +183,32 @@ data class AddCartRequest(
 
 )
 
+data class AddFavoriteRequest(
+    val MaKhachHang: Int,
+    val MaSanPham: Int
+)
+
+data class AddFavoriteReponse(
+    val success: Boolean,
+    val message: String?=null
+)
+
+data class FavoriteItem(
+    @SerializedName("product_id") val productId: Int,
+    @SerializedName("product_name") val productName: String,
+    @SerializedName("price") val price: Double,
+    @SerializedName("price_formatted") val priceFormatted: String,
+    @SerializedName("image") val image: String,
+    @SerializedName("added_date") val addedDate: String
+)
+
+data class WishlistResponse(
+    val success: Boolean,
+    val data: List<FavoriteItem>? = null,
+    val message: String?=null
+
+)
+
 data class CartItem(
     val MaChiTietSP: Int,
     val MaSanPham: Int,

@@ -37,6 +37,7 @@ import com.example.appbandienthoai.Screens.ProductDetailScreen
 import com.example.appbandienthoai.Screens.ProfileScreen
 import com.example.appbandienthoai.Screens.RegisterScreen
 import com.example.appbandienthoai.Screens.SplashScreen
+import com.example.appbandienthoai.Screens.WishListScreen
 import com.example.appbandienthoai.components.CartViewModel
 import com.example.appbandienthoai.data.api.RetrofitClient
 import com.example.appbandienthoai.ui.theme.AppBanDienThoaiTheme
@@ -235,6 +236,21 @@ fun AppNavigation(cartViewModel: CartViewModel) {
             }
             if (userId > 0) {
                 OrderHistoryScreen(
+                    api = RetrofitClient.api,
+                    userId = userId,
+                    navController = navController
+                )
+            }
+        }
+        composable("yeu_thich"){
+            val context = LocalContext.current
+            var userId by remember { mutableStateOf(-1) }
+
+            LaunchedEffect(Unit) {
+                userId = getUserId(context)
+            }
+            if (userId > 0) {
+                WishListScreen(
                     api = RetrofitClient.api,
                     userId = userId,
                     navController = navController
