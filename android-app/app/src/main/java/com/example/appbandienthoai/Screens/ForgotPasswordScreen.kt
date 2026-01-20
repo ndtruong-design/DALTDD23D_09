@@ -119,10 +119,10 @@ fun ForgotPasswordScreen(
                                 }
                                 loading = false
                             }
-                        },
+                        },colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7)) ,
                         modifier = Modifier.fillMaxWidth().height(50.dp)
                     ) {
-                        Text("Kieeerm tra")
+                        Text("Kiểm tra")
                     }
                 }
 

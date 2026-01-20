@@ -129,7 +129,7 @@ fun LoginScreen(
                 checked = rememberMe,
                 onCheckedChange = { rememberMe = it }
             )
-            Text("Ghi nhớ tôi")
+            Text("Ghi nhớ tôi",color =Color(0xFF673AB7))
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -245,7 +245,7 @@ fun LoginScreen(
             Text("Chưa có tài khoản? ", color = Color.Gray)
             Text(
                 text = "Đăng ký",
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Bold,color =Color(0xFF673AB7),
                 modifier = Modifier.clickable { onRegisterClick() }
             )
         }

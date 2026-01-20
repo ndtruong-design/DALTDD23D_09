@@ -13,7 +13,6 @@ require_once '../config/db_connect.php';
 
 try {
     $data = json_decode(file_get_contents("php://input"), true);
-
     if (!isset($data['MaKhachHang']) || !isset($data['MatKhauCu']) || !isset($data['MatKhauMoi'])) {
         http_response_code(400);
         echo json_encode([
@@ -25,9 +24,9 @@ try {
 
     $maKhachHang = intval($data['MaKhachHang']);
     $matKhauCu = $data['MatKhauCu'];
-    $matKhauMoi = $data['MatKhauMoi'];
+    $matKhauMoi = $data['MatKhauMoi']; 
 
- 
+
     $sql = "SELECT MatKhau FROM KhachHang WHERE MaKhachHang = ?";
     $stmt = $conn->prepare($sql);
     $stmt->execute([$maKhachHang]);
@@ -40,21 +39,18 @@ try {
         ], JSON_UNESCAPED_UNICODE);
         exit();
     }
-
- 
-    if ($matKhauCu !== $user['MatKhau']) {
+    if (!password_verify($matKhauCu, $user['MatKhau'])) {
         echo json_encode([
             'success' => false,
             'message' => 'Mật khẩu cũ không đúng'
         ], JSON_UNESCAPED_UNICODE);
         exit();
     }
-
-   
+    $matKhauMoiHash = password_hash($matKhauMoi, PASSWORD_DEFAULT);
     $sqlUpdate = "UPDATE KhachHang SET MatKhau = ? WHERE MaKhachHang = ?";
     $stmtUpdate = $conn->prepare($sqlUpdate);
     
-    if ($stmtUpdate->execute([$matKhauMoi, $maKhachHang])) {
+    if ($stmtUpdate->execute([$matKhauMoiHash, $maKhachHang])) {
         echo json_encode([
             'success' => true,
             'message' => 'Đổi mật khẩu thành công'
