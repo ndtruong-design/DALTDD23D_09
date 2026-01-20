@@ -6,15 +6,15 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once "../config/db_connect.php"; 
 
-// 1. Nhận dữ liệu từ Client (Hỗ trợ cả JSON và Form Data)
+
 $data = json_decode(file_get_contents("php://input"), true);
 
-// Nếu không gửi kiểu JSON thì kiểm tra $_POST
+
 if (is_null($data)) {
     $data = $_POST;
 }
 
-// 2. Kiểm tra đầu vào
+
 if (!isset($data['MaDonHang']) || !isset($data['MaKhachHang'])) {
     echo json_encode(["success" => false, "message" => "Thiếu MaDonHang hoặc MaKhachHang"]);
     exit();
@@ -24,10 +24,10 @@ $order_id = intval($data['MaDonHang']);
 $user_id  = intval($data['MaKhachHang']);
 
 try {
-    // Bắt đầu Transaction (để đảm bảo tính nhất quán dữ liệu)
+
     $conn->beginTransaction();
 
-    // 3. Kiểm tra trạng thái đơn hàng và quyền sở hữu
+
     $checkSql = "SELECT TrangThai FROM DonHang WHERE MaDonHang = ? AND MaKhachHang = ? FOR UPDATE";
     $stmtCheck = $conn->prepare($checkSql);
     $stmtCheck->execute([$order_id, $user_id]);
@@ -39,7 +39,7 @@ try {
         exit();
     }
 
-    // Chỉ cho phép hủy nếu trạng thái là 0 (Chờ duyệt)
+   
     if ($order['TrangThai'] != 0) {
         $conn->rollBack();
         $statusText = getStatusText($order['TrangThai']);
@@ -47,13 +47,13 @@ try {
         exit();
     }
 
-    // 4. Lấy chi tiết các sản phẩm trong đơn hàng để hoàn kho
+
     $sqlGetItems = "SELECT MaChiTietSP, SoLuong FROM ChiTietDonHang WHERE MaDonHang = ?";
     $stmtGetItems = $conn->prepare($sqlGetItems);
     $stmtGetItems->execute([$order_id]);
     $items = $stmtGetItems->fetchAll(PDO::FETCH_ASSOC);
 
-    // 5. Cập nhật lại số lượng tồn kho (ChiTietSanPham)
+
     $sqlUpdateStock = "UPDATE ChiTietSanPham SET SoLuongTon = SoLuongTon + ? WHERE MaChiTietSP = ?";
     $stmtUpdateStock = $conn->prepare($sqlUpdateStock);
 
@@ -61,12 +61,11 @@ try {
         $stmtUpdateStock->execute([$item['SoLuong'], $item['MaChiTietSP']]);
     }
 
-    // 6. Cập nhật trạng thái đơn hàng thành 3 (Đã hủy)
     $sqlCancel = "UPDATE DonHang SET TrangThai = 3 WHERE MaDonHang = ?";
     $stmtCancel = $conn->prepare($sqlCancel);
     $stmtCancel->execute([$order_id]);
 
-    // Commit Transaction (Lưu thay đổi)
+ 
     $conn->commit();
 
     echo json_encode([
@@ -76,7 +75,6 @@ try {
     ]);
 
 } catch (PDOException $e) {
-    // Nếu có lỗi, hoàn tác mọi thay đổi
     if ($conn->inTransaction()) {
         $conn->rollBack();
     }
@@ -86,7 +84,7 @@ try {
     ]);
 }
 
-// Helper function (Copy từ file cũ để đồng bộ)
+
 function getStatusText($status_code) {
     $status_map = [0 => "Chờ duyệt", 1 => "Đang giao hàng", 2 => "Giao thành công", 3 => "Đã hủy"];
     return $status_map[$status_code] ?? "Không xác định";

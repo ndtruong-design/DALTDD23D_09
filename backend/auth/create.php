@@ -75,7 +75,7 @@ try {
         ]);
     }
 
-    // 3️⃣ Cập nhật tổng tiền
+
     $stmt = $conn->prepare("
         UPDATE donhang SET TongTien = :tong WHERE MaDonHang = :madon
     ");

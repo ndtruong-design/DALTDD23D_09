@@ -6,7 +6,7 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once "../config/db_connect.php"; 
 
-// 1. Kiểm tra đầu vào
+
 if (!isset($_GET['MaKhachHang'])) {
     echo json_encode(["success" => false, "message" => "Thiếu MaKhachHang"]);
     exit();
@@ -15,8 +15,7 @@ if (!isset($_GET['MaKhachHang'])) {
 $user_id = intval($_GET['MaKhachHang']);
 
 try {
-    // 2. Câu truy vấn SQL lấy sản phẩm yêu thích
-    // Logic: Lấy thông tin SP, lấy giá thấp nhất trong các biến thể, lấy 1 ảnh đại diện
+
     $sql = "
         SELECT 
             sp.MaSanPham, 
@@ -45,7 +44,6 @@ try {
     
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // 3. Xử lý dữ liệu trả về
     $wishlist = [];
 
     foreach ($rows as $row) {
@@ -54,7 +52,7 @@ try {
             'product_name' => $row['TenSanPham'],
             'price' => (float)$row['GiaThapNhat'],
             'price_formatted' => number_format($row['GiaThapNhat'], 0, ',', '.') . ' đ',
-            'image' => $row['HinhAnh'] ?? 'https://via.placeholder.com/150', // Ảnh mặc định nếu null
+            'image' => $row['HinhAnh'] ?? 'https://via.placeholder.com/150',
             'added_date' => $row['NgayThem']
         ];
     }

@@ -58,7 +58,7 @@ fun ProductDetailScreen(
 
     var selectedColorId by remember { mutableStateOf("") }
 
-    // 1. Lấy chi tiết sản phẩm và danh sách màu từ API
+
     LaunchedEffect(maSanPham, selectedMemory, selectedColorId) {
         try {
             isLoading = true
@@ -89,7 +89,6 @@ fun ProductDetailScreen(
         }
     }
 
-    // 2. Lấy hình ảnh khi mã màu thay đổi
     LaunchedEffect(selectedColorId, product?.MaChiTietSP) {
         val currentMaSanPham = product?.MaSanPham
         if (selectedColorId.isNotEmpty() && currentMaSanPham != null) {
@@ -102,7 +101,7 @@ fun ProductDetailScreen(
             }
         }
     }
-    //Giao diện
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -128,7 +127,7 @@ fun ProductDetailScreen(
                         .verticalScroll(rememberScrollState())
                         .padding(16.dp)
                 ) {
-                    // 1. Hình ảnh
+
                     if (productImage.isNotEmpty()) {
                         LazyRow(
                             modifier = Modifier
@@ -163,7 +162,7 @@ fun ProductDetailScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 2. Thông tin cơ bản
+
                     Text(text = product?.Hang ?: "", color = Color.Gray, fontSize = 14.sp)
                     Text(text = product?.TenSanPham ?: "", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                     Row(
@@ -208,7 +207,7 @@ fun ProductDetailScreen(
                     }
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                    // 3. Chọn bộ nhớ
+
                     Text("Phiên bản bộ nhớ:", fontWeight = FontWeight.Bold)
                     Row(modifier = Modifier.padding(vertical = 8.dp)) {
                         memoryOptions.forEach { mem ->
@@ -239,7 +238,7 @@ fun ProductDetailScreen(
                         }
                     }
 
-                    // 4. Chọn màu sắc
+
                     if (colorList.isNotEmpty()) {
                         Text("Chọn màu sắc:", fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
                         LazyRow(
@@ -281,7 +280,7 @@ fun ProductDetailScreen(
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 5. Mô tả sản phẩm
+
                     Text("Mô tả sản phẩm:", fontWeight = FontWeight.Bold)
                     Text(
                         text = product?.MoTa ?: "Đang cập nhật...",
@@ -302,7 +301,7 @@ fun ProductDetailScreen(
                     Text(text="Màn hình: "+product?.ManHinh.toString())
                     Text(text="Pin: "+product?.Pin.toString())
                     Text(text="Ram: "+product?.RAM.toString())
-                    // 7. Nút mua hàng
+
                     Button(
                         onClick = {
                             coroutineScope.launch {

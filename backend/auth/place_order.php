@@ -5,9 +5,12 @@ require_once "../config/db_connect.php";
 $input = file_get_contents("php://input");
 $data = json_decode($input, true);
 
+
 $maKhachHang = intval($data['MaKhachHang'] ?? 0);
 $items = $data['items'] ?? [];
 $method = $data['MaPTTT'] ?? 'COD';
+
+$maKhuyenMaiInput = isset($data['MaKhuyenMai']) ? strtoupper(trim($data['MaKhuyenMai'])) : '';
 
 if ($maKhachHang <= 0 || empty($items)) {
     echo json_encode(["success" => false, "message" => "Dữ liệu không hợp lệ"]);
@@ -17,13 +20,15 @@ if ($maKhachHang <= 0 || empty($items)) {
 try {
     $conn->beginTransaction();
 
-
+  
     $sqlExpired = "
         SELECT MaDonHang, MaKhachHang 
         FROM DonHang 
         WHERE TrangThaiThanhToan = 0 
-        AND NgayDatHang < DATE_SUB(NOW(), INTERVAL 5 DAY)
-    ";
+        AND TrangThai != 3                -- KHÔNG LẤY ĐƠN ĐÃ HỦY (3)
+        AND NgayDatHang < DATE_SUB(NOW(), INTERVAL 5 DAY) 
+        FOR UPDATE
+    "; 
     $stmtExpired = $conn->query($sqlExpired);
     $expiredOrders = $stmtExpired->fetchAll(PDO::FETCH_ASSOC);
 
@@ -31,11 +36,8 @@ try {
         $oldOrderId = $order['MaDonHang'];
         $oldUserId  = $order['MaKhachHang'];
 
-        $stmtOldItems = $conn->prepare("
-            SELECT MaChiTietSP, SoLuong 
-            FROM ChiTietDonHang 
-            WHERE MaDonHang = ?
-        ");
+
+        $stmtOldItems = $conn->prepare("SELECT MaChiTietSP, SoLuong FROM ChiTietDonHang WHERE MaDonHang = ?");
         $stmtOldItems->execute([$oldOrderId]);
         $oldItems = $stmtOldItems->fetchAll(PDO::FETCH_ASSOC);
 
@@ -43,13 +45,11 @@ try {
             $idSP = $oldItem['MaChiTietSP'];
             $qty  = $oldItem['SoLuong'];
 
-            $stmtRestoreStock = $conn->prepare("
-                UPDATE ChiTietSanPham 
-                SET SoLuongTon = SoLuongTon + ? 
-                WHERE MaChiTietSP = ?
-            ");
+ 
+            $stmtRestoreStock = $conn->prepare("UPDATE ChiTietSanPham SET SoLuongTon = SoLuongTon + ? WHERE MaChiTietSP = ?");
             $stmtRestoreStock->execute([$qty, $idSP]);
 
+       
             $stmtBackToCart = $conn->prepare("
                 INSERT INTO GioHang (MaKhachHang, MaChiTietSP, SoLuong)
                 VALUES (?, ?, ?)
@@ -58,17 +58,20 @@ try {
             $stmtBackToCart->execute([$oldUserId, $idSP, $qty]);
         }
 
-        $conn->prepare("DELETE FROM ChiTietDonHang WHERE MaDonHang = ?")->execute([$oldOrderId]);
-        $conn->prepare("DELETE FROM DonHang WHERE MaDonHang = ?")->execute([$oldOrderId]);
+      
+        $stmtCancelOrder = $conn->prepare("
+            UPDATE DonHang 
+            SET TrangThai = 3 
+            WHERE MaDonHang = ?
+        ");
+        $stmtCancelOrder->execute([$oldOrderId]);
     }
+
+
     $maCT_list = array_column($items, 'MaChiTietSP');
     $placeholders = implode(',', array_fill(0, count($maCT_list), '?'));
 
-    $stmtCheck = $conn->prepare("
-        SELECT MaChiTietSP, Gia, SoLuongTon 
-        FROM ChiTietSanPham 
-        WHERE MaChiTietSP IN ($placeholders)
-    ");
+    $stmtCheck = $conn->prepare("SELECT MaChiTietSP, Gia, SoLuongTon FROM ChiTietSanPham WHERE MaChiTietSP IN ($placeholders)");
     $stmtCheck->execute($maCT_list);
     $products = $stmtCheck->fetchAll(PDO::FETCH_ASSOC);
 
@@ -79,73 +82,81 @@ try {
         $stockMap[$p['MaChiTietSP']] = $p['SoLuongTon'];
     }
 
-    $totalAmount = 0;
+    $totalAmount = 0; 
     foreach ($items as $item) {
         $id  = $item['MaChiTietSP'];
         $qty = $item['SoLuong'];
-
         if ($qty > ($stockMap[$id] ?? 0)) {
             throw new Exception("Sản phẩm ID $id không đủ tồn kho");
         }
         $totalAmount += $priceMap[$id] * $qty;
     }
+
+  
+    $discountAmount = 0; 
+    $appliedPromoCode = null; 
+
+    if (!empty($maKhuyenMaiInput)) {
+        $stmtPromo = $conn->prepare("SELECT * FROM KhuyenMai WHERE MaKhuyenMai = ? AND TrangThai = 1 AND SoLuong > 0 FOR UPDATE");
+        $stmtPromo->execute([$maKhuyenMaiInput]);
+        $promo = $stmtPromo->fetch(PDO::FETCH_ASSOC);
+
+        if (!$promo) throw new Exception("Mã khuyến mãi không hợp lệ hoặc hết lượt");
+        if ($totalAmount < $promo['GiaToiThieu']) throw new Exception("Đơn hàng chưa đạt giá trị tối thiểu");
+
+        $discountAmount = $totalAmount * ($promo['TiLeGiam'] / 100);
+        
+  
+        $dbPromoCode = $promo['MaKhuyenMai'];
+        $stmtUpdatePromo = $conn->prepare("UPDATE KhuyenMai SET SoLuong = SoLuong - 1 WHERE MaKhuyenMai = ?");
+        $stmtUpdatePromo->execute([$dbPromoCode]);
+        
+        $appliedPromoCode = $dbPromoCode; 
+    }
+
+    $finalTotal = max(0, $totalAmount - $discountAmount);
+
+    
     $trangThaiTT = ($method === "COD") ? 0 : 1;
     $maPTTT_ID = ($method === "BANK") ? 2 : (($method === "WALLET") ? 3 : 1);
+    $fullAddress = "Tên: " . ($data['HoTen'] ?? '') . " | SĐT: " . ($data['SoDienThoai'] ?? '') . " | ĐC: " . ($data['DiaChi'] ?? '');
 
-    $fullAddress =
-        "Tên: " . ($data['HoTen'] ?? '') .
-        " | SĐT: " . ($data['SoDienThoai'] ?? '') .
-        " | ĐC: " . ($data['DiaChi'] ?? '');
-
+  
     $stmtDonHang = $conn->prepare("
         INSERT INTO DonHang 
-        (MaKhachHang, NgayDatHang, NgayDuKien, TongTien, TrangThai, TrangThaiThanhToan, MaPTTT, DiaChiGiaoHang)
-        VALUES (?, NOW(), DATE_ADD(NOW(), INTERVAL 5 DAY), ?, 0, ?, ?, ?)
+        (MaKhachHang, NgayDatHang, NgayDuKien, TongTien, TrangThai, TrangThaiThanhToan, MaPTTT, DiaChiGiaoHang, MaKhuyenMai)
+        VALUES (?, NOW(), DATE_ADD(NOW(), INTERVAL 5 DAY), ?, 0, ?, ?, ?, ?)
     ");
-    $stmtDonHang->execute([
-        $maKhachHang,
-        $totalAmount,
-        $trangThaiTT,
-        $maPTTT_ID,
-        $fullAddress
-    ]);
-
+    $stmtDonHang->execute([$maKhachHang, $finalTotal, $trangThaiTT, $maPTTT_ID, $fullAddress, $appliedPromoCode]);
     $maDonHang = $conn->lastInsertId();
-    $stmtInsertCT = $conn->prepare("
-        INSERT INTO ChiTietDonHang (MaDonHang, MaChiTietSP, SoLuong, DonGia)
-        VALUES (?, ?, ?, ?)
-    ");
-    $stmtMinusStock = $conn->prepare("
-        UPDATE ChiTietSanPham 
-        SET SoLuongTon = SoLuongTon - ? 
-        WHERE MaChiTietSP = ?
-    ");
+
+ 
+    $stmtInsertCT = $conn->prepare("INSERT INTO ChiTietDonHang (MaDonHang, MaChiTietSP, SoLuong, DonGia) VALUES (?, ?, ?, ?)");
+    $stmtMinusStock = $conn->prepare("UPDATE ChiTietSanPham SET SoLuongTon = SoLuongTon - ? WHERE MaChiTietSP = ?");
 
     foreach ($items as $item) {
         $id  = $item['MaChiTietSP'];
         $qty = $item['SoLuong'];
-
         $stmtInsertCT->execute([$maDonHang, $id, $qty, $priceMap[$id]]);
         $stmtMinusStock->execute([$qty, $id]);
     }
-    $sqlDeleteCart = "
-        DELETE FROM GioHang 
-        WHERE MaKhachHang = ? 
-        AND MaChiTietSP IN ($placeholders)
-    ";
+
+ 
+    $sqlDeleteCart = "DELETE FROM GioHang WHERE MaKhachHang = ? AND MaChiTietSP IN ($placeholders)";
     $params = array_merge([$maKhachHang], $maCT_list);
     $conn->prepare($sqlDeleteCart)->execute($params);
 
     $conn->commit();
     echo json_encode([
         "success" => true,
-        "MaDonHang" => (int)$maDonHang
+        "MaDonHang" => (int)$maDonHang,
+        "TongTienGoc" => $totalAmount,
+        "GiamGia" => $discountAmount,
+        "TongThanhToan" => $finalTotal
     ]);
 
 } catch (Exception $e) {
     if ($conn->inTransaction()) $conn->rollBack();
-    echo json_encode([
-        "success" => false,
-        "message" => "Lỗi: " . $e->getMessage()
-    ]);
+    echo json_encode(["success" => false, "message" => "Lỗi: " . $e->getMessage()]);
 }
+?>

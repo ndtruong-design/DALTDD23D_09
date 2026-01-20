@@ -7,7 +7,7 @@ require_once "../config/db_connect.php";
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-// Nhận MaSanPham và MaMau thay vì chỉ nhận MaChiTietSP để đảm bảo tính chính xác
+
 if (!isset($data['MaKhachHang']) || !isset($data['MaSanPham']) || !isset($data['MaMau'])) {
     echo json_encode([
         "success" => false, 
@@ -23,7 +23,7 @@ $boNho=$data['BoNho'] ;
 $soLuong = isset($data['SoLuong']) ? (int)$data['SoLuong'] : 1;
 
 try {
-    // 1. Tìm MaChiTietSP phù hợp với Sản phẩm, Màu sắc và Bộ nhớ đã chọn
+
     $sql_find_detail = "SELECT MaChiTietSP FROM ChiTietSanPham 
                         WHERE MaSanPham = :maSanPham AND BoNho = :boNho AND MaMau = :maMau LIMIT 1 ";
     

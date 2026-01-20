@@ -272,7 +272,10 @@ data class PlaceOrderRequest(
 data class PlaceOrderResponse(
     val success: Boolean,
     val message: String?,
-    val MaDonHang: Int?
+    val MaDonHang: Int?,
+    val TongTienGoc: Long?,
+    val GiamGia: Long?,
+    val TongThanhToan: Long?
 )
 data class OrderAdmin(
     val MaDonHang: Int,

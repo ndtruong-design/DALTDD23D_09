@@ -82,7 +82,7 @@ fun ProfileScreen(
     fun validateInputs(): Boolean {
         var isValid = true
 
-        // Reset errors
+
         hoTenError = ""
         soDienThoaiError = ""
         emailError = ""
