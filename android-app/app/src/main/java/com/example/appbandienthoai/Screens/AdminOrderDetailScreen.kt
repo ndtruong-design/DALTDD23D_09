@@ -1,5 +1,6 @@
 package com.example.appbandienthoai.Screens
-import android.util.Log
+
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,33 +31,43 @@ fun AdminOrderDetailScreen(
     api: ApiService,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     var orderDetail by remember { mutableStateOf<OrderDetailData?>(null) }
     var orderItems by remember { mutableStateOf<List<OrderItemData>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
+
+    // Loading ban đầu
+    var isInitialLoading by remember { mutableStateOf(true) }
+    // Loading khi cập nhật
+    var isUpdating by remember { mutableStateOf(false) }
+
+    var errorMessage by remember { mutableStateOf<String?>(null) } // Lỗi tải trang
+
     var showStatusDialog by remember { mutableStateOf(false) }
     var selectedStatus by remember { mutableStateOf(0) }
 
-    val scope = rememberCoroutineScope()
-
+    // Hàm tải dữ liệu
     fun loadData() {
         scope.launch {
-            isLoading = true
-            errorMessage = ""
+
+            if (orderDetail == null) isInitialLoading = true
+            errorMessage = null
+
             try {
                 val response = api.getOrderDetail(orderId)
                 if (response.success) {
                     orderDetail = response.order
                     orderItems = response.items
+                    // Cập nhật trạng thái hiện tại vào biến tạm
                     selectedStatus = response.order.TrangThai
                 } else {
                     errorMessage = response.message ?: "Không thể tải đơn hàng"
                 }
             } catch (e: Exception) {
-                errorMessage = "Lỗi: ${e.message}"
-                Log.e("OrderDetail", "Error", e)
+                errorMessage = "Lỗi kết nối: ${e.localizedMessage}"
             } finally {
-                isLoading = false
+                isInitialLoading = false
             }
         }
     }
@@ -64,64 +76,81 @@ fun AdminOrderDetailScreen(
         loadData()
     }
 
+    // Hàm cập nhật trạng thái
     fun updateStatus() {
         scope.launch {
-            isLoading = true
+            isUpdating = true
             try {
                 val response = api.updateOrderStatus(
                     UpdateStatusRequest(orderId, selectedStatus)
                 )
                 if (response.success) {
-                    loadData()
+                    Toast.makeText(context, "Cập nhật thành công!", Toast.LENGTH_SHORT).show()
+                    loadData() // Tải lại dữ liệu mới nhất
+                    showStatusDialog = false
                 } else {
-                    errorMessage = response.message
+                    // API trả về lỗi 400 (Logic PHP chặn) -> Hiện Toast thông báo lỗi
+                    Toast.makeText(context, response.message, Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
-                errorMessage = "Lỗi: ${e.message}"
+                Toast.makeText(context, "Lỗi: ${e.message}", Toast.LENGTH_SHORT).show()
             } finally {
-                isLoading = false
-                showStatusDialog = false
+                isUpdating = false
             }
         }
     }
 
+    // Logic Reset trạng thái khi đóng/mở Dialog
     if (showStatusDialog) {
+        // Luôn reset về trạng thái thực tế khi mở dialog để tránh "Dirty state"
+        LaunchedEffect(Unit) {
+            orderDetail?.let { selectedStatus = it.TrangThai }
+        }
+
         AlertDialog(
             onDismissRequest = { showStatusDialog = false },
-            title = { Text("Chọn trạng thái mới") },
+            title = { Text("Cập nhật trạng thái") },
             text = {
                 Column {
-                    RadioOption(
-                        text = "Chờ duyệt",
-                        selected = selectedStatus == 0,
-                        onClick = { selectedStatus = 0 }
+                    // Chỉ hiển thị các lựa chọn hợp lệ (Optional - Logic UI nâng cao)
+                    // Ở đây hiện hết nhưng PHP sẽ chặn nếu chọn sai
+                    val options = listOf(
+                        0 to "Chờ duyệt",
+                        1 to "Đang giao",
+                        2 to "Đã giao (Hoàn tất)",
+                        3 to "Đã hủy"
                     )
-                    RadioOption(
-                        text = "Đang giao",
-                        selected = selectedStatus == 1,
-                        onClick = { selectedStatus = 1 }
-                    )
-                    RadioOption(
-                        text = "Đã giao",
-                        selected = selectedStatus == 2,
-                        onClick = { selectedStatus = 2 }
-                    )
-                    RadioOption(
-                        text = "Đã hủy",
-                        selected = selectedStatus == 3,
-                        onClick = { selectedStatus = 3 }
-                    )
+
+                    options.forEach { (value, label) ->
+                        RadioOption(
+                            text = label,
+                            selected = selectedStatus == value,
+                            onClick = { selectedStatus = value }
+                        )
+                    }
                 }
             },
             confirmButton = {
                 Button(
                     onClick = { updateStatus() },
+                    enabled = !isUpdating, // Disable khi đang call API
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2196F3)
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3))
                 ) {
+                    if (isUpdating) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(Modifier.width(8.dp))
+                    }
                     Text("Xác nhận")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStatusDialog = false }) {
+                    Text("Hủy")
                 }
             }
         )
@@ -132,7 +161,7 @@ fun AdminOrderDetailScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text("Order Detail", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text("Chi tiết đơn hàng", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         Text("#DH$orderId", fontSize = 12.sp, color = Color.Gray)
                     }
                 },
@@ -144,74 +173,50 @@ fun AdminOrderDetailScreen(
             )
         }
     ) { padding ->
-
         when {
-            isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+            isInitialLoading -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
 
-            errorMessage.isNotEmpty() -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+            errorMessage != null -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = errorMessage, color = Color.Red)
-                        Spacer(Modifier.height(16.dp))
-                        Button(onClick = onBack) {
-                            Text("Quay lại")
-                        }
+                        Text(text = errorMessage!!, color = Color.Red)
+                        Button(onClick = { loadData() }) { Text("Thử lại") }
                     }
                 }
             }
 
             orderDetail != null -> {
+                val detail = orderDetail!! // Non-null assertion an toàn vì đã check
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-
+                    // 1. Status Chip
                     item {
                         Box(modifier = Modifier.padding(start = 16.dp, top = 8.dp)) {
-                            orderDetail?.let { StatusChip(status = it.TrangThai) }
+                            StatusChip(status = detail.TrangThai)
                         }
                     }
 
+                    // 2. Thông tin khách hàng
                     item {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White)
-                        ) {
-                            orderDetail?.let {
-                                Column(Modifier.padding(16.dp)) {
-                                    Text(
-                                        "Khách hàng",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp
-                                    )
-                                    Spacer(Modifier.height(12.dp))
-                                    InfoRow("Khách hàng", it.KhachHang.HoTen)
-                                    InfoRow("SĐT", it.KhachHang.SoDienThoai)
-                                    it.DiaChiGiaoHang?.let { diachi ->
-                                        InfoRow("Địa chỉ", diachi)
-                                    }
-                                }
-                            }
+                        CardSection(title = "Thông tin khách hàng") {
+                            InfoRow("Họ tên", detail.KhachHang.HoTen)
+                            InfoRow("SĐT", detail.KhachHang.SoDienThoai)
+                            detail.DiaChiGiaoHang?.let { InfoRow("Địa chỉ", it) }
                         }
                     }
 
                     item {
                         Text(
-                            "Sản phẩm đã đặt (${orderItems.size})",
+                            "Sản phẩm (${orderItems.size})",
                             modifier = Modifier.padding(horizontal = 16.dp),
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
@@ -220,9 +225,7 @@ fun AdminOrderDetailScreen(
 
                     item {
                         Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
                             Column {
@@ -235,59 +238,67 @@ fun AdminOrderDetailScreen(
                             }
                         }
                     }
-
                     item {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White)
-                        ) {
-                            orderDetail?.let {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        "Tổng thanh toán:",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp
-                                    )
-                                    Text(
-                                        String.format("%,.0f đ", it.TongTien),
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 18.sp,
-                                        color = Color(0xFFE91E63)
-                                    )
-                                }
+                        CardSection(title = null) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Tổng thanh toán:", fontWeight = FontWeight.Bold)
+                                Text(
+                                  "%,d đ".format(detail.TongTien.toLong()),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp,
+                                    color = Color(0xFFE91E63)
+                                )
                             }
                         }
                     }
 
                     item {
+
+                        val isFinalStatus = detail.TrangThai == 2 || detail.TrangThai == 3
+
                         Button(
                             onClick = { showStatusDialog = true },
+                            enabled = !isFinalStatus,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
+                                .padding(16.dp)
                                 .height(50.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF2196F3)
+                                containerColor = if (isFinalStatus) Color.Gray else Color(0xFF2196F3)
                             ),
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text("CẬP NHẬT TRẠNG THÁI", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                text = if (isFinalStatus) "ĐƠN HÀNG ĐÃ KẾT THÚC" else "CẬP NHẬT TRẠNG THÁI",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
 
-                    item {
-                        Spacer(Modifier.height(16.dp))
-                    }
+                    item { Spacer(Modifier.height(20.dp)) }
                 }
             }
+        }
+    }
+}
+
+
+@Composable
+fun CardSection(title: String?, content: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            if (title != null) {
+                Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Spacer(Modifier.height(12.dp))
+            }
+            content()
         }
     }
 }
@@ -295,70 +306,42 @@ fun AdminOrderDetailScreen(
 @Composable
 fun InfoRow(label: String, value: String) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(label, color = Color.Gray, fontSize = 14.sp)
-        Text(value, fontSize = 14.sp)
+        Text(value, fontSize = 14.sp, fontWeight = FontWeight.Medium)
     }
 }
 
 @Composable
 fun ProductItemRow(item: OrderItemData) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
+    Row(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
         AsyncImage(
             model = item.DuongLinkAnh,
             contentDescription = null,
-            modifier = Modifier
-                .size(60.dp)
-                .padding(end = 12.dp),
+            modifier = Modifier.size(60.dp).padding(end = 12.dp),
             contentScale = ContentScale.Crop
         )
-
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                item.TenSanPham,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
-            )
-            Text(
-                "${item.BoNho} - ${item.TenMau}",
-                color = Color.Gray,
-                fontSize = 12.sp
-            )
+            Text(item.TenSanPham, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text("${item.BoNho} - ${item.TenMau}", color = Color.Gray, fontSize = 12.sp)
             Spacer(Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("x${item.SoLuong}", fontSize = 14.sp)
-                Text(
-                    String.format("%,.0f đ", item.DonGia),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
-                )
+                Text("%,.0f đ".format(item.DonGia), fontWeight = FontWeight.Bold, fontSize = 14.sp)
             }
         }
     }
 }
 
 @Composable
-fun RadioOption(
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
+fun RadioOption(text: String, selected: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(selected = selected, onClick = onClick)
