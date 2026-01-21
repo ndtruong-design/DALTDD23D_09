@@ -44,7 +44,7 @@ try {
         exit();
     }
 
-    $checkSql = "SELECT TrangThai FROM DonHang WHERE MaDonHang = ?";
+    $checkSql = "SELECT TrangThai, TrangThaiThanhToan FROM DonHang WHERE MaDonHang = ?";
     $checkStmt = $conn->prepare($checkSql);
     $checkStmt->execute([$maDonHang]);
     $order = $checkStmt->fetch(PDO::FETCH_ASSOC);
@@ -59,7 +59,9 @@ try {
     }
 
     $trangThaiCu = intval($order['TrangThai']);
+    $trangThaiThanhToanHienTai = intval($order['TrangThaiThanhToan']);
 
+    // Không cho sửa đơn đã giao
     if ($trangThaiCu == 2) {
         http_response_code(400);
         echo json_encode([
@@ -69,6 +71,7 @@ try {
         exit();
     }
 
+    // Không cho khôi phục đơn đã hủy
     if ($trangThaiCu == 3 && $trangThaiMoi != 3) {
         http_response_code(400);
         echo json_encode([
@@ -78,6 +81,7 @@ try {
         exit();
     }
 
+    // Không cho chuyển ngược về trạng thái cũ (trừ hủy)
     if ($trangThaiMoi < $trangThaiCu && $trangThaiMoi != 3) {
         http_response_code(400);
         echo json_encode([
@@ -89,10 +93,23 @@ try {
 
     $conn->beginTransaction();
 
-    $updateSql = "UPDATE DonHang SET TrangThai = ? WHERE MaDonHang = ?";
-    $stmt = $conn->prepare($updateSql);
-    $stmt->execute([$trangThaiMoi, $maDonHang]);
+    // Xác định trạng thái thanh toán mới
+    $trangThaiThanhToanMoi = $trangThaiThanhToanHienTai; // Mặc định giữ nguyên
+    
+    if ($trangThaiMoi == 2) {
+        // Khi chuyển sang "Đã giao" -> Tự động cập nhật "Đã thanh toán"
+        $trangThaiThanhToanMoi = 1;
+    } elseif ($trangThaiMoi == 3 && $trangThaiThanhToanHienTai == 1) {
+        // Khi hủy đơn mà đã thanh toán -> Chuyển sang "Đã hoàn tiền"
+        $trangThaiThanhToanMoi = 2;
+    }
 
+    // Cập nhật trạng thái đơn hàng VÀ trạng thái thanh toán
+    $updateSql = "UPDATE DonHang SET TrangThai = ?, TrangThaiThanhToan = ? WHERE MaDonHang = ?";
+    $stmt = $conn->prepare($updateSql);
+    $stmt->execute([$trangThaiMoi, $trangThaiThanhToanMoi, $maDonHang]);
+
+    // Xử lý tồn kho khi hủy đơn
     if ($trangThaiMoi == 3 && $trangThaiCu != 3) {
         $getItemsSql = "SELECT MaChiTietSP, SoLuong FROM ChiTietDonHang WHERE MaDonHang = ?";
         $getItemsStmt = $conn->prepare($getItemsSql);
@@ -117,9 +134,26 @@ try {
         default => 'Không xác định'
     };
 
+    $paymentStatusText = match ($trangThaiThanhToanMoi) {
+        0 => 'Chưa thanh toán',
+        1 => 'Đã thanh toán',
+        2 => 'Đã hoàn tiền',
+        default => 'Không xác định'
+    };
+
+    // Thông báo có bao gồm cả trạng thái thanh toán nếu có thay đổi
+    $message = "Cập nhật thành công: $statusText";
+    if ($trangThaiThanhToanMoi != $trangThaiThanhToanHienTai) {
+        $message .= " | $paymentStatusText";
+    }
+
     echo json_encode([
         'success' => true,
-        'message' => "Cập nhật thành công: $statusText"
+        'message' => $message,
+        'data' => [
+            'TrangThai' => $trangThaiMoi,
+            'TrangThaiThanhToan' => $trangThaiThanhToanMoi
+        ]
     ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
