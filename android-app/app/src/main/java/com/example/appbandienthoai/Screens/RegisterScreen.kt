@@ -110,9 +110,13 @@ fun RegisterScreen(
 
                 OutlinedTextField(
                     value = phone,
-                    onValueChange = { phone = it },
+                    onValueChange = { input ->
+                        if (input.all { it.isDigit() } && input.length <= 11) {
+                            phone = input
+                        }
+                    },
                     label = { Text("Số điện thoại") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
