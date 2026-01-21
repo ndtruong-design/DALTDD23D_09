@@ -165,7 +165,7 @@ fun ForgotPasswordScreen(
                                     error = "Không kết nối được server"
                                 }
                             }
-                        },
+                        },colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7)) ,
                         modifier = Modifier.fillMaxWidth().height(50.dp)
                     ) {
                         Text("Đổi mật khẩu")
