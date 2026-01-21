@@ -9,19 +9,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    http_response_code(405);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Chỉ hỗ trợ phương thức GET'
+    ], JSON_UNESCAPED_UNICODE);
+    exit();
+}
+
 require_once '../config/db_connect.php';
 
 try {
-    if (! isset($_GET['MaKhachHang'])) {
+    if (!isset($_GET['MaKhachHang'])) {
         http_response_code(400);
-        echo json_encode(array(
+        echo json_encode([
             'success' => false,
             'message' => 'Thiếu MaKhachHang'
-        ), JSON_UNESCAPED_UNICODE);
+        ], JSON_UNESCAPED_UNICODE);
         exit();
     }
-    
+
     $maKhachHang = intval($_GET['MaKhachHang']);
+
     $sql = "SELECT 
                 MaKhachHang,
                 TenDangNhap,
@@ -42,33 +52,34 @@ try {
     
     if (!$user) {
         http_response_code(404);
-        echo json_encode(array(
+        echo json_encode([
             'success' => false,
-            'message' => 'Không tìm thấy khách hàng'
-        ), JSON_UNESCAPED_UNICODE);
+            'message' => 'Thông tin không hợp lệ'
+        ], JSON_UNESCAPED_UNICODE);
         exit();
     }
     
-    echo json_encode(array(
+    echo json_encode([
         'success' => true,
-        'user' => array(
+        'user' => [
             'MaKhachHang' => intval($user['MaKhachHang']),
             'TenDangNhap' => $user['TenDangNhap'],
-            'HoTen' => $user['HoTen'],
-            'SoDienThoai' => $user['SoDienThoai'],
+            'HoTen' => $user['HoTen'] ?? '',
+            'SoDienThoai' => $user['SoDienThoai'] ?? '',
             'Email' => $user['Email'] ?? '',
             'NgaySinh' => $user['NgaySinh'] ?? '',
             'DiaChi' => $user['DiaChi'] ?? '',
             'AnhDaiDien' => $user['AnhDaiDien'] ?? '',
             'TrangThai' => intval($user['TrangThai'])
-        )
-    ), JSON_UNESCAPED_UNICODE);
-    
+        ],
+        'message' => ''
+    ], JSON_UNESCAPED_UNICODE);
+
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(array(
+    echo json_encode([
         'success' => false,
-        'message' => 'Lỗi server: ' .  $e->getMessage()
-    ), JSON_UNESCAPED_UNICODE);
+        'message' => 'Lỗi hệ thống'
+    ], JSON_UNESCAPED_UNICODE);
 }
-?> 
+?>

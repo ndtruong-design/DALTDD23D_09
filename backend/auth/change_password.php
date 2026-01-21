@@ -26,7 +26,6 @@ try {
     $matKhauCu = $data['MatKhauCu'];
     $matKhauMoi = $data['MatKhauMoi']; 
 
-
     $sql = "SELECT MatKhau FROM KhachHang WHERE MaKhachHang = ?";
     $stmt = $conn->prepare($sql);
     $stmt->execute([$maKhachHang]);
@@ -39,6 +38,8 @@ try {
         ], JSON_UNESCAPED_UNICODE);
         exit();
     }
+
+    // Kiểm tra mật khẩu cũ đúng
     if (!password_verify($matKhauCu, $user['MatKhau'])) {
         echo json_encode([
             'success' => false,
@@ -46,6 +47,17 @@ try {
         ], JSON_UNESCAPED_UNICODE);
         exit();
     }
+
+    // THÊM ràng buộc: mật khẩu mới KHÔNG ĐƯỢC trùng mật khẩu cũ
+    if (password_verify($matKhauMoi, $user['MatKhau'])) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Mật khẩu mới không được trùng với mật khẩu cũ'
+        ], JSON_UNESCAPED_UNICODE);
+        exit();
+    }
+
+    // Nếu vượt qua kiểm tra → hash mật khẩu mới và update
     $matKhauMoiHash = password_hash($matKhauMoi, PASSWORD_DEFAULT);
     $sqlUpdate = "UPDATE KhachHang SET MatKhau = ? WHERE MaKhachHang = ?";
     $stmtUpdate = $conn->prepare($sqlUpdate);

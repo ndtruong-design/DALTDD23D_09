@@ -9,10 +9,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    http_response_code(405);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Chỉ hỗ trợ phương thức GET'
+    ], JSON_UNESCAPED_UNICODE);
+    exit();
+}
+
 require_once '../../config/db_connect.php';
 
 try {
-   
     if (!isset($_GET['MaDonHang'])) {
         http_response_code(400);
         echo json_encode([
@@ -21,7 +29,7 @@ try {
         ], JSON_UNESCAPED_UNICODE);
         exit();
     }
-    
+
     $orderId = intval($_GET['MaDonHang']);
 
     $sql = "SELECT 
@@ -43,7 +51,7 @@ try {
         http_response_code(404);
         echo json_encode([
             'success' => false,
-            'message' => 'Không tìm thấy đơn hàng'
+            'message' => 'Thông tin không hợp lệ'
         ], JSON_UNESCAPED_UNICODE);
         exit();
     }
@@ -54,7 +62,6 @@ try {
                     ms.TenMau,
                     ctdh.SoLuong,
                     ctdh.DonGia,
-                    (ctdh.SoLuong * ctdh.DonGia) AS ThanhTien,
                     ha.DuongLinkAnh
                 FROM ChiTietDonHang ctdh
                 JOIN ChiTietSanPham ctsp ON ctdh.MaChiTietSP = ctsp.MaChiTietSP
@@ -65,15 +72,16 @@ try {
     $stmtItems = $conn->prepare($sqlItems);
     $stmtItems->execute([$orderId]);
     $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
+
     $orderItems = [];
     foreach ($items as $item) {
         $orderItems[] = [
             'TenSanPham' => $item['TenSanPham'],
             'SoLuong' => intval($item['SoLuong']),
             'DonGia' => floatval($item['DonGia']),
-            'DuongLinkAnh' => $item['DuongLinkAnh'],
-            'BoNho' => $item['BoNho'],
-            'TenMau' => $item['TenMau']
+            'DuongLinkAnh' => $item['DuongLinkAnh'] ?? '',
+            'BoNho' => $item['BoNho'] ?? '',
+            'TenMau' => $item['TenMau'] ?? ''
         ];
     }
 
@@ -100,7 +108,7 @@ try {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Lỗi server: ' . $e->getMessage()
+        'message' => 'Lỗi hệ thống'
     ], JSON_UNESCAPED_UNICODE);
 }
 ?>
