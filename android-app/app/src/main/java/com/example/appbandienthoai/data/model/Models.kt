@@ -18,7 +18,8 @@ data class LoginResponse(
 data class RegisterRequest(
     val TenDangNhap: String,
     val SoDienThoai: String,
-    val MatKhau: String
+    val MatKhau: String,
+    val HoTen: String
 )
 
 data class RegisterResponse(

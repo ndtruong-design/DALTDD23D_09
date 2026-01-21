@@ -7,8 +7,9 @@ $data = json_decode(file_get_contents("php://input"), true);
 $username = $data['TenDangNhap'] ?? '';
 $phone    = $data['SoDienThoai'] ?? '';
 $password = $data['MatKhau'] ?? '';
+$hoten   = $data['HoTen'] ?? '';
 
-if (empty($username) || empty($phone) || empty($password)) {
+if (empty($username) || empty($phone) || empty($password)|| empty($hoten)) {
     echo json_encode([
         "success" => false,
         "message" => "Vui lòng nhập đầy đủ thông tin"
@@ -35,13 +36,14 @@ if ($stmt->rowCount() > 0) {
 
 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-$sql = "INSERT INTO khachhang (TenDangNhap, SoDienThoai, MatKhau)
-        VALUES (:TenDangNhap, :SoDienThoai, :MatKhau)";
+$sql = "INSERT INTO khachhang (TenDangNhap, SoDienThoai, MatKhau, HoTen)
+        VALUES (:TenDangNhap, :SoDienThoai, :MatKhau, :HoTen)";
 $stmt = $conn->prepare($sql);
 $stmt->execute([
     ":TenDangNhap" => $username,
     ":SoDienThoai" => $phone,
-    ":MatKhau"     => $hashedPassword
+    ":MatKhau"     => $hashedPassword,
+    ":HoTen"       => $hoten
 ]);
 
 echo json_encode([

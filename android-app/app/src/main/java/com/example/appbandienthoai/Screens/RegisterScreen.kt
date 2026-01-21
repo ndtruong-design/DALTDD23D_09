@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -33,6 +34,7 @@ fun RegisterScreen(
     onLoginClick: () -> Unit
 ) {
     var username by remember { mutableStateOf("") }
+    var hoten by remember{mutableStateOf("")}
     var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -89,7 +91,17 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it },
-                    label = { Text("Tên người dùng") },
+                    label = { Text("Tên đăng nhập") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = hoten   ,
+                    onValueChange = { hoten = it },
+                    label = { Text("Họ và tên") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -142,7 +154,7 @@ fun RegisterScreen(
                             error = ""
                             try {
                                 val response = api.register(
-                                    RegisterRequest(username, phone, password)
+                                    RegisterRequest(username, phone, password,hoten)
                                 )
                                 if (response.success) {
                                     onLoginClick()
