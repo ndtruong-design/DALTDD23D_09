@@ -37,20 +37,16 @@ fun AdminOrderDetailScreen(
     var orderDetail by remember { mutableStateOf<OrderDetailData?>(null) }
     var orderItems by remember { mutableStateOf<List<OrderItemData>>(emptyList()) }
 
-    // Loading ban đầu
     var isInitialLoading by remember { mutableStateOf(true) }
-    // Loading khi cập nhật
     var isUpdating by remember { mutableStateOf(false) }
 
-    var errorMessage by remember { mutableStateOf<String?>(null) } // Lỗi tải trang
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     var showStatusDialog by remember { mutableStateOf(false) }
     var selectedStatus by remember { mutableStateOf(0) }
 
-    // Hàm tải dữ liệu
     fun loadData() {
         scope.launch {
-
             if (orderDetail == null) isInitialLoading = true
             errorMessage = null
 
@@ -59,13 +55,12 @@ fun AdminOrderDetailScreen(
                 if (response.success) {
                     orderDetail = response.order
                     orderItems = response.items
-                    // Cập nhật trạng thái hiện tại vào biến tạm
                     selectedStatus = response.order.TrangThai
                 } else {
                     errorMessage = response.message ?: "Không thể tải đơn hàng"
                 }
             } catch (e: Exception) {
-                errorMessage = "Lỗi kết nối: ${e.localizedMessage}"
+                errorMessage = "Lỗi kết nối: ${e.localizedMessage ?: "Không xác định"}"
             } finally {
                 isInitialLoading = false
             }
@@ -76,56 +71,60 @@ fun AdminOrderDetailScreen(
         loadData()
     }
 
-    // Hàm cập nhật trạng thái
     fun updateStatus() {
+        val currentStatus = orderDetail?.TrangThai ?: return
+
         scope.launch {
             isUpdating = true
             try {
                 val response = api.updateOrderStatus(
                     UpdateStatusRequest(orderId, selectedStatus)
                 )
+
                 if (response.success) {
                     Toast.makeText(context, "Cập nhật thành công!", Toast.LENGTH_SHORT).show()
-                    loadData() // Tải lại dữ liệu mới nhất
+                    loadData()
                     showStatusDialog = false
                 } else {
-                    // API trả về lỗi 400 (Logic PHP chặn) -> Hiện Toast thông báo lỗi
-                    Toast.makeText(context, response.message, Toast.LENGTH_LONG).show()
+                    val msg = response.message ?: "Cập nhật thất bại"
+                    Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Lỗi: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Lỗi: ${e.message}", Toast.LENGTH_LONG).show()
             } finally {
                 isUpdating = false
             }
         }
     }
 
-    // Logic Reset trạng thái khi đóng/mở Dialog
-    if (showStatusDialog) {
-        // Luôn reset về trạng thái thực tế khi mở dialog để tránh "Dirty state"
-        LaunchedEffect(Unit) {
-            orderDetail?.let { selectedStatus = it.TrangThai }
+    if (showStatusDialog && orderDetail != null) {
+        val currentStatus = orderDetail!!.TrangThai
+
+        LaunchedEffect(showStatusDialog) {
+            selectedStatus = currentStatus
         }
 
         AlertDialog(
-            onDismissRequest = { showStatusDialog = false },
+            onDismissRequest = { if (!isUpdating) showStatusDialog = false },
             title = { Text("Cập nhật trạng thái") },
             text = {
                 Column {
-                    // Chỉ hiển thị các lựa chọn hợp lệ (Optional - Logic UI nâng cao)
-                    // Ở đây hiện hết nhưng PHP sẽ chặn nếu chọn sai
-                    val options = listOf(
+                    listOf(
                         0 to "Chờ duyệt",
                         1 to "Đang giao",
-                        2 to "Đã giao (Hoàn tất)",
+                        2 to "Đã giao",
                         3 to "Đã hủy"
-                    )
+                    ).forEach { (value, label) ->
+                        val disabled = currentStatus == 2 ||
+                                currentStatus == 3 ||
+                                (value < currentStatus && value != 3) ||
+                                value == currentStatus
 
-                    options.forEach { (value, label) ->
                         RadioOption(
                             text = label,
                             selected = selectedStatus == value,
-                            onClick = { selectedStatus = value }
+                            enabled = !disabled,
+                            onClick = { if (!disabled) selectedStatus = value }
                         )
                     }
                 }
@@ -133,7 +132,7 @@ fun AdminOrderDetailScreen(
             confirmButton = {
                 Button(
                     onClick = { updateStatus() },
-                    enabled = !isUpdating, // Disable khi đang call API
+                    enabled = !isUpdating && selectedStatus != currentStatus,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3))
                 ) {
@@ -147,12 +146,8 @@ fun AdminOrderDetailScreen(
                     }
                     Text("Xác nhận")
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showStatusDialog = false }) {
-                    Text("Hủy")
-                }
             }
+
         )
     }
 
@@ -175,22 +170,24 @@ fun AdminOrderDetailScreen(
     ) { padding ->
         when {
             isInitialLoading -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
 
             errorMessage != null -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = errorMessage!!, color = Color.Red)
+                        Spacer(Modifier.height(16.dp))
                         Button(onClick = { loadData() }) { Text("Thử lại") }
                     }
                 }
             }
 
             orderDetail != null -> {
-                val detail = orderDetail!! // Non-null assertion an toàn vì đã check
+                val detail = orderDetail!!
+                val isFinalStatus = detail.TrangThai == 2 || detail.TrangThai == 3
 
                 LazyColumn(
                     modifier = Modifier
@@ -198,14 +195,12 @@ fun AdminOrderDetailScreen(
                         .padding(padding),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // 1. Status Chip
                     item {
                         Box(modifier = Modifier.padding(start = 16.dp, top = 8.dp)) {
                             StatusChip(status = detail.TrangThai)
                         }
                     }
 
-                    // 2. Thông tin khách hàng
                     item {
                         CardSection(title = "Thông tin khách hàng") {
                             InfoRow("Họ tên", detail.KhachHang.HoTen)
@@ -238,6 +233,7 @@ fun AdminOrderDetailScreen(
                             }
                         }
                     }
+
                     item {
                         CardSection(title = null) {
                             Row(
@@ -246,7 +242,7 @@ fun AdminOrderDetailScreen(
                             ) {
                                 Text("Tổng thanh toán:", fontWeight = FontWeight.Bold)
                                 Text(
-                                  "%,d đ".format(detail.TongTien.toLong()),
+                                    "%,d đ".format(detail.TongTien.toLong()),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 18.sp,
                                     color = Color(0xFFE91E63)
@@ -256,12 +252,9 @@ fun AdminOrderDetailScreen(
                     }
 
                     item {
-
-                        val isFinalStatus = detail.TrangThai == 2 || detail.TrangThai == 3
-
                         Button(
                             onClick = { showStatusDialog = true },
-                            enabled = !isFinalStatus,
+                            enabled = !isFinalStatus && !isUpdating,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp)
@@ -285,8 +278,6 @@ fun AdminOrderDetailScreen(
         }
     }
 }
-
-
 @Composable
 fun CardSection(title: String?, content: @Composable ColumnScope.() -> Unit) {
     Card(
@@ -336,16 +327,36 @@ fun ProductItemRow(item: OrderItemData) {
 }
 
 @Composable
-fun RadioOption(text: String, selected: Boolean, onClick: () -> Unit) {
+fun RadioOption(
+    text: String,
+    selected: Boolean,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        RadioButton(selected = selected, onClick = onClick)
+        RadioButton(
+            selected = selected,
+            onClick = onClick,
+            enabled = enabled,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = Color(0xFF2196F3),
+                unselectedColor = if (enabled) Color.Gray else Color.LightGray,
+                disabledSelectedColor = Color.Gray,
+                disabledUnselectedColor = Color.LightGray
+            )
+        )
         Spacer(Modifier.width(8.dp))
-        Text(text, fontSize = 16.sp)
+        Text(
+            text = text,
+            fontSize = 16.sp,
+            color = if (enabled) Color.Black else Color.Gray
+        )
     }
 }
+

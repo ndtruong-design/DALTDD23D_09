@@ -48,7 +48,6 @@ fun ProfileScreen(
     var message by remember { mutableStateOf("") }
     var showLogoutDialog by remember { mutableStateOf(false) }
 
-    // Error states
     var hoTenError by remember { mutableStateOf("") }
     var soDienThoaiError by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf("") }
@@ -154,7 +153,7 @@ fun ProfileScreen(
                     email = res.user.Email.orEmpty()
                     ngaySinh = res.user.NgaySinh.orEmpty()
                     diaChi = res.user.DiaChi.orEmpty()
-                    message = "✓ Cập nhật thành công"
+                    message = "Cập nhật thành công"
                 } else {
                     message = " ${res.message ?: "Cập nhật thất bại"}"
                 }
@@ -257,11 +256,35 @@ fun ProfileScreen(
             Spacer(Modifier.height(24.dp))
 
             if (message.isNotEmpty()) {
-                Text(
-                    text = message,
-                    color = if (message.startsWith("✓")) Color(0xFF4CAF50) else Color.Red,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (message.contains("thành công"))
+                            Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = if (message.contains("thành công"))
+                                Icons.Default.CheckCircle else Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = if (message.contains("thành công"))
+                                Color(0xFF4CAF50) else Color.Red,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = message,
+                            fontSize = 14.sp,
+                            color = Color.Black
+                        )
+                    }
+                }
             }
 
             OutlinedTextField(
