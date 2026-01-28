@@ -89,7 +89,7 @@ fun ProductDetailScreen(
         }
     }
 
-    LaunchedEffect(selectedColorId, product?.MaChiTietSP) {
+    LaunchedEffect(selectedColorId, product?.MaSanPham) {
         val currentMaSanPham = product?.MaSanPham
         if (selectedColorId.isNotEmpty() && currentMaSanPham != null) {
             try {
@@ -205,6 +205,13 @@ fun ProductDetailScreen(
                             Icon(Icons.Default.Favorite, contentDescription = "Yêu thích", tint = Color.Red)
                         }
                     }
+                    if(product?.SoLuongTon.toString().toInt()>0){
+                        Text("Còn hàng",color = Color.Green)
+                    }
+                    else{
+                        Text("Hết hàng", color = Color.Red)
+                    }
+                    Text(text="Số lượng: "+product?.SoLuongTon.toString(), color = Color.Gray)
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
 
@@ -237,7 +244,6 @@ fun ProductDetailScreen(
                             )
                         }
                     }
-
 
                     if (colorList.isNotEmpty()) {
                         Text("Chọn màu sắc:", fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
@@ -301,7 +307,6 @@ fun ProductDetailScreen(
                     Text(text="Màn hình: "+product?.ManHinh.toString())
                     Text(text="Pin: "+product?.Pin.toString())
                     Text(text="Ram: "+product?.RAM.toString())
-
                     Button(
                         onClick = {
                             coroutineScope.launch {

@@ -67,8 +67,6 @@ fun RegisterScreen(
             ) {
 
                 Spacer(Modifier.height(80.dp))
-
-                // Logo
                 Image(
                     painter = painterResource(id = R.drawable.logo_shop),
                     contentDescription = null,
@@ -111,7 +109,7 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = phone,
                     onValueChange = { input ->
-                        if (input.all { it.isDigit() } && input.length <= 11) {
+                        if (input.all { it.isDigit() } && input.length <= 10) {
                             phone = input
                         }
                     },
